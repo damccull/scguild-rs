@@ -1,4 +1,3 @@
-use core::slice::SlicePattern;
 use std::{
     cell::RefCell,
     convert::TryInto,
@@ -10,7 +9,7 @@ use std::{
 use actix_web::{
     dev::{Service, ServiceRequest, ServiceResponse, Transform},
     error::ErrorUnauthorized,
-    web::BytesMut,
+    web::{Buf, BytesMut},
     Error, HttpMessage,
 };
 use futures::stream::StreamExt;
@@ -73,43 +72,54 @@ where
         let mut svc = self.service.clone();
 
         Box::pin(async move {
+            // Grab the body as some bytes
             let mut body = BytesMut::new();
             let mut stream = req.take_payload();
             while let Some(chunk) = stream.next().await {
                 body.extend_from_slice(&chunk?);
             }
-
-            //let body = String::from_utf8(body.to_vec()).ok();
-
-            println!("request body: {:?}", body);
+            dbg!(&body);
 
             // Grab the signature and timestamp from the headers and transform them to Option<&str>
-            let sig = req
+            let signature = req
                 .headers()
                 .get("X-Signature-Ed25519")
                 .and_then(|signature| signature.to_str().ok());
+            let signature = match signature {
+                None => {
+                    return Err(ErrorUnauthorized("missing X-Signature-Ed25519 header"));
+                }
+                Some(s) => s,
+            };
             let timestamp = req
                 .headers()
                 .get("X-Signature-Timestamp")
                 .and_then(|timestamp| timestamp.to_str().ok());
-            let ts = match timestamp {
+            let timestamp = match timestamp {
                 None => {
-                    let e = Err(ErrorUnauthorized("not authorized"));
-                    return e;
+                    return Err(ErrorUnauthorized("missing X-Signature-Timestamp header"));
                 }
                 Some(s) => s,
             };
-            let message = println!("Sig: {:?}, Timestamp: {:?}", sig, timestamp);
 
-            // if let (Some(signature), Some(timestamp)) = (sig, timestamp) {
-            //     println!("Got both");
-            // }
+            // Create the message to validate by prepending the body with the signature timestamp
+            let mut message = Vec::from(timestamp);
+            message.extend_from_slice(body.bytes());
+            dbg!(&signature, &timestamp, &message);
+
+            match verify(message, timestamp, signature) {
+                Ok(val) => {
+                    dbg!(val)
+                }
+                Err(er) => {
+                    dbg!(er);
+                    return Err(ErrorUnauthorized("invalid signature"));
+                }
+            }
 
             let res = svc.call(req).await?;
-
-            println!("response: {:?}", res.headers());
-            let e = Ok(self.service.call(req));
-            e
+            dbg!(&res.headers());
+            Ok(res)
         })
 
         //------------
@@ -150,31 +160,44 @@ where
     }
 }
 
-fn verify(message: String, signature: &str) -> Result<(), ValidationError> {
-    let pubkey = hex::decode("97c0eac82876c508e26959019fba50b5b80a7305ab148f9a4ef5a787005f5fab")
+fn verify(message: Vec<u8>, timestamp: &str, signature: &str) -> Result<(), ValidationError> {
+    let pubkey = hex::decode("0363649faf7a83d0bc0d9faa9c6a5efa8adc772190b8072210bc825895ca3570")
         .ok()
         .unwrap();
 
     // Concatenate timestamp+body then verify this against the provided signature.
 
+    // TODO: Get this from dotenv and never unwrap it without error handling
     let public_key: PublicKey = PublicKey::from_bytes(pubkey.as_slice()).unwrap();
 
-    let signature_bytes = hex::decode(&signature).ok().unwrap();
+    let signature_bytes = match hex::decode(&signature).ok() {
+        Some(val) => val,
+        None => {
+            return Err(ValidationError::KeyConversionError {
+                name: "unable to decode hex",
+            })
+        }
+    };
 
     let signature_bytes: [u8; 64] =
         signature_bytes
             .try_into()
             .map_err(|_| ValidationError::KeyConversionError {
-                name: "Signature Length",
+                name: "signature length",
             })?;
 
     let signature = Signature::new(signature_bytes);
+    dbg!(&signature);
 
-    let result = public_key.verify(message.as_bytes(), &signature);
+    match public_key.verify(message.as_slice(), &signature) {
+        Ok(val) => val,
+        Err(_) => return Err(ValidationError::InvalidSignatureError),
+    };
 
-    println!("{:#?}", public_key);
+    dbg!(&public_key);
     Ok(())
 }
+#[derive(Debug)]
 pub enum ValidationError {
     /// For anything related to conversion errors
     KeyConversionError {

@@ -16,10 +16,13 @@ async fn api(req: HttpRequest) -> impl Responder {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
-            .wrap(verify_ed25519_signature::VerifyEd25519Signature)
             .route("/", web::get().to(greet))
             .route("/{name}", web::get().to(greet))
-            .route("/api/{interaction}", web::get().to(api))
+            .service(
+                web::scope("/api")
+                    .wrap(verify_ed25519_signature::VerifyEd25519Signature)
+                    .route("/{interaction}", web::get().to(api)),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()
