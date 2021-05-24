@@ -94,7 +94,7 @@ where
                 .and_then(|timestamp| timestamp.to_str().ok());
             let ts = match timestamp {
                 None => {
-                    let e = err(ErrorUnauthorized("not authorized"));
+                    let e = Err(ErrorUnauthorized("not authorized"));
                     return e;
                 }
                 Some(s) => s,
@@ -108,7 +108,7 @@ where
             let res = svc.call(req).await?;
 
             println!("response: {:?}", res.headers());
-            let e = ok(self.service.call(req));
+            let e = Ok(self.service.call(req));
             e
         })
 
