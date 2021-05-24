@@ -94,7 +94,8 @@ where
                 .and_then(|timestamp| timestamp.to_str().ok());
             let ts = match timestamp {
                 None => {
-                    return Either::Right(err(ErrorUnauthorized("not authorized")));
+                    let e = err(ErrorUnauthorized("not authorized"));
+                    return e;
                 }
                 Some(s) => s,
             };
@@ -107,7 +108,8 @@ where
             let res = svc.call(req).await?;
 
             println!("response: {:?}", res.headers());
-            Either::Left(self.service.call(req))
+            let e = ok(self.service.call(req));
+            e
         })
 
         //------------
