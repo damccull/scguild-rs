@@ -1,7 +1,10 @@
-use actix_web::{web, App, HttpRequest, HttpServer, Responder};
+use std::{error::Error, fs::File, io::BufReader, path::Path};
 
-mod verify_ed25519_signature;
+use actix_web::{web, App, HttpRequest, HttpServer, Responder};
+use entities::Ship;
+
 mod entities;
+mod verify_ed25519_signature;
 
 async fn greet(req: HttpRequest) -> impl Responder {
     let name = req.match_info().get("name").unwrap_or("World");
@@ -15,6 +18,13 @@ async fn api(req: HttpRequest) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    match read_ships_from_file("ships.json") {
+        Ok(ships) => {
+            dbg!(ships);
+        }
+        Err(e) => panic!("Error reading ships.json: {:?}", e),
+    }
+
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(greet))
@@ -28,4 +38,16 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
+}
+
+fn read_ships_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<Ship>, Box<dyn Error>> {
+    // Open the file in read-only mode with buffer.
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    // Read the JSON contents of the file as an instance of `User`.
+    let ships = serde_json::from_reader(reader)?;
+
+    // Return the `User`.
+    Ok(ships)
 }
