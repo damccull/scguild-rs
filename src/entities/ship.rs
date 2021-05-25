@@ -25,45 +25,67 @@ pub struct Ship {
     flight_characteristics: FlightCharacteristics,
     propulsion: Propulsion,
     quantum_travel: QuantumTravel,
-    pilot_hard_points: Vec<Hardpoint>,
+    pilot_hardpoints: Vec<Hardpoint>,
     manned_turrets: Vec<Turret>,
     remote_turrets: Vec<Turret>,
-    insurance: Insurance,
+    insurance: Option<Insurance>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct DamageBeforeDestruction {
-    nose: f32,
-    body: f32,
+    // Aliases because json does not normalize key casing.
+    #[serde(alias = "Nose")]
+    #[serde(alias = "nose")]
+    nose: Option<f32>,
+    #[serde(alias = "Body")]
+    #[serde(alias = "body")]
+    body: Option<f32>,
+    #[serde(alias = "Front")]
+    #[serde(alias = "front")]
+    front: Option<f32>,
+    #[serde(alias = "Rear")]
+    #[serde(alias = "rear")]
+    rear: Option<f32>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct DamageBeforeDetach {
     // All these are individually named because of bad naming in json source.
-    #[serde(rename(deserialize = "Canopy"))]
-    canopy: f32,
-    #[serde(rename(deserialize = "Wing_Right"))]
-    wing_right: f32,
-    #[serde(rename(deserialize = "Wing_Flap_Right"))]
-    wing_flap_right: f32,
-    #[serde(rename(deserialize = "WingTip_Right"))]
-    wingtip_right: f32,
-    #[serde(rename(deserialize = "Wing_Left"))]
-    wing_left: f32,
-    #[serde(rename(deserialize = "Wing_Flap_Left"))]
-    wing_flap_left: f32,
-    #[serde(rename(deserialize = "WingTip_Left"))]
-    wingtip_left: f32,
-    #[serde(rename(deserialize = "HullTail_Right"))]
-    hulltail_right: f32,
-    #[serde(rename(deserialize = "Right_Tail_Fin_Flap"))]
-    right_tail_fin_flap: f32,
-    #[serde(rename(deserialize = "HullTail_Left"))]
-    hulltail_left: f32,
-    #[serde(rename(deserialize = "Left_Tail_Fin_Flap"))]
-    left_tail_fin_flap: f32,
+    #[serde(alias = "Canopy")]
+    #[serde(alias = "canopy")]
+    canopy: Option<f32>,
+    #[serde(alias = "Wing_Right")]
+    #[serde(alias = "wing_right")]
+    wing_right: Option<f32>,
+    #[serde(alias = "Wing_Flap_Right")]
+    #[serde(alias = "wing_flap_right")]
+    wing_flap_right: Option<f32>,
+    #[serde(alias = "WingTip_Right")]
+    #[serde(alias = "wingtip_right")]
+    wingtip_right: Option<f32>,
+    #[serde(alias = "Wing_Left")]
+    #[serde(alias = "wing_left")]
+    wing_left: Option<f32>,
+    #[serde(alias = "Wing_Flap_Left")]
+    #[serde(alias = "wing_flap_left")]
+    wing_flap_left: Option<f32>,
+    #[serde(alias = "WingTip_Left")]
+    #[serde(alias = "wingtip_left")]
+    wingtip_left: Option<f32>,
+    #[serde(alias = "HullTail_Right")]
+    #[serde(alias = "hulltail_right")]
+    hulltail_right: Option<f32>,
+    #[serde(alias = "Right_Tail_Fin_Flap")]
+    #[serde(alias = "right_tail_fin_flap")]
+    right_tail_fin_flap: Option<f32>,
+    #[serde(alias = "HullTail_Left")]
+    #[serde(alias = "hulltail_left")]
+    hulltail_left: Option<f32>,
+    #[serde(alias = "Left_Tail_Fin_Flap")]
+    #[serde(alias = "left_tail_fin_flap")]
+    left_tail_fin_flap: Option<f32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -71,7 +93,9 @@ pub struct DamageBeforeDetach {
 pub struct FlightCharacteristics {
     scm_speed: f32,
     max_speed: f32,
+    #[serde(default)]
     zero_to_scm: f32,
+    #[serde(default)]
     zero_to_max: f32,
     scm_to_zero: f32,
     max_to_zero: f32,
@@ -95,8 +119,8 @@ pub struct Propulsion {
     fuel_intake_rate: f32,
     fuel_usage: ThrustDirectionValue,
     thrust_capacity: ThrustDirectionValue,
-    intake_to_main_fuel_ration: f32,
-    intake_to_tank_capacity_ration: f32,
+    intake_to_main_fuel_ratio: f32,
+    intake_to_tank_capacity_ratio: f32,
     time_for_intakes_to_fill_tank: f32,
     maneuvering_time_till_empty: f32,
 }
@@ -117,7 +141,10 @@ pub struct QuantumTravel {
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Hardpoint {
     size: usize,
+    #[serde(default)]
     fixed: bool,
+    #[serde(default)]
+    gimballed: bool,
     weapon_sizes: Vec<usize>,
 }
 
