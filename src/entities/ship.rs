@@ -1,6 +1,7 @@
-use core::f32;
+use core::f64;
 
-use serde::Deserialize;
+use serde::{de::Error, Deserialize, Deserializer};
+use serde_json::Value;
 
 use super::{Manufacturer, Turret};
 
@@ -9,7 +10,7 @@ use super::{Manufacturer, Turret};
 pub struct Ship {
     class_name: String,
     name: String,
-    description: String,
+    description: Option<String>,
     career: String,
     role: String,
     size: usize,
@@ -17,7 +18,7 @@ pub struct Ship {
     crew: usize,
     weapon_crew: usize,
     operations_crew: usize,
-    mass: f32,
+    mass: f64,
     is_spaceship: bool,
     manufacturer: Manufacturer,
     damage_before_destruction: DamageBeforeDestruction,
@@ -37,16 +38,16 @@ pub struct DamageBeforeDestruction {
     // Aliases because json does not normalize key casing.
     #[serde(alias = "Nose")]
     #[serde(alias = "nose")]
-    nose: Option<f32>,
+    nose: Option<f64>,
     #[serde(alias = "Body")]
     #[serde(alias = "body")]
-    body: Option<f32>,
+    body: Option<f64>,
     #[serde(alias = "Front")]
     #[serde(alias = "front")]
-    front: Option<f32>,
+    front: Option<f64>,
     #[serde(alias = "Rear")]
     #[serde(alias = "rear")]
-    rear: Option<f32>,
+    rear: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -55,50 +56,52 @@ pub struct DamageBeforeDetach {
     // All these are individually named because of bad naming in json source.
     #[serde(alias = "Canopy")]
     #[serde(alias = "canopy")]
-    canopy: Option<f32>,
+    canopy: Option<f64>,
     #[serde(alias = "Wing_Right")]
     #[serde(alias = "wing_right")]
-    wing_right: Option<f32>,
+    wing_right: Option<f64>,
     #[serde(alias = "Wing_Flap_Right")]
     #[serde(alias = "wing_flap_right")]
-    wing_flap_right: Option<f32>,
+    wing_flap_right: Option<f64>,
     #[serde(alias = "WingTip_Right")]
     #[serde(alias = "wingtip_right")]
-    wingtip_right: Option<f32>,
+    wingtip_right: Option<f64>,
     #[serde(alias = "Wing_Left")]
     #[serde(alias = "wing_left")]
-    wing_left: Option<f32>,
+    wing_left: Option<f64>,
     #[serde(alias = "Wing_Flap_Left")]
     #[serde(alias = "wing_flap_left")]
-    wing_flap_left: Option<f32>,
+    wing_flap_left: Option<f64>,
     #[serde(alias = "WingTip_Left")]
     #[serde(alias = "wingtip_left")]
-    wingtip_left: Option<f32>,
+    wingtip_left: Option<f64>,
     #[serde(alias = "HullTail_Right")]
     #[serde(alias = "hulltail_right")]
-    hulltail_right: Option<f32>,
+    hulltail_right: Option<f64>,
     #[serde(alias = "Right_Tail_Fin_Flap")]
     #[serde(alias = "right_tail_fin_flap")]
-    right_tail_fin_flap: Option<f32>,
+    right_tail_fin_flap: Option<f64>,
     #[serde(alias = "HullTail_Left")]
     #[serde(alias = "hulltail_left")]
-    hulltail_left: Option<f32>,
+    hulltail_left: Option<f64>,
     #[serde(alias = "Left_Tail_Fin_Flap")]
     #[serde(alias = "left_tail_fin_flap")]
-    left_tail_fin_flap: Option<f32>,
+    left_tail_fin_flap: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct FlightCharacteristics {
-    scm_speed: f32,
-    max_speed: f32,
-    #[serde(default)]
-    zero_to_scm: f32,
-    #[serde(default)]
-    zero_to_max: f32,
-    scm_to_zero: f32,
-    max_to_zero: f32,
+    scm_speed: f64,
+    max_speed: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    zero_to_scm: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    zero_to_max: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    scm_to_zero: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    max_to_zero: f64,
     acceleration: ThrustDirectionValue,
     acceleration_g: ThrustDirectionValue,
 }
@@ -106,35 +109,43 @@ pub struct FlightCharacteristics {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct ThrustDirectionValue {
-    main: f32,
-    retro: f32,
-    vtol: f32,
-    maneuvering: f32,
+    #[serde(deserialize_with = "f64_deserializer")]
+    main: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    retro: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    vtol: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    maneuvering: f64,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Propulsion {
-    fuel_capacity: f32,
-    fuel_intake_rate: f32,
+    fuel_capacity: f64,
+    fuel_intake_rate: f64,
     fuel_usage: ThrustDirectionValue,
     thrust_capacity: ThrustDirectionValue,
-    intake_to_main_fuel_ratio: f32,
-    intake_to_tank_capacity_ratio: f32,
-    time_for_intakes_to_fill_tank: f32,
-    maneuvering_time_till_empty: f32,
+    #[serde(deserialize_with = "f64_deserializer")]
+    intake_to_main_fuel_ratio: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    intake_to_tank_capacity_ratio: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    time_for_intakes_to_fill_tank: f64,
+    #[serde(deserialize_with = "f64_deserializer")]
+    maneuvering_time_till_empty: f64,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct QuantumTravel {
-    speed: f32,
-    spool_time: f32,
-    fuel_capacity: f32,
-    range: f32,
-    port_olisar_to_arc_corp_time: f32,
-    port_olisar_to_arc_corp_fuel: f32,
-    port_olisar_to_arc_corp_and_back: f32,
+    speed: f64,
+    spool_time: f64,
+    fuel_capacity: f64,
+    range: f64,
+    port_olisar_to_arc_corp_time: f64,
+    port_olisar_to_arc_corp_fuel: f64,
+    port_olisar_to_arc_corp_and_back: f64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -151,7 +162,23 @@ pub struct Hardpoint {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Insurance {
-    standard_claim_time: f32,
-    expedited_claim_time: f32,
-    expedited_cost: f32,
+    standard_claim_time: f64,
+    expedited_claim_time: f64,
+    expedited_cost: f64,
+}
+
+fn f64_deserializer<'de, D>(d: D) -> Result<f64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: Value = Deserialize::deserialize(d)?;
+    match s {
+        Value::String(s) if s == "Infinity" => Ok(f64::INFINITY),
+        Value::String(s) if s == "NaN" => Ok(f64::NAN),
+        Value::Number(s) => s.as_f64().ok_or_else(|| Error::custom("failed to parse")),
+        _ => Err(Error::custom(format!(
+            "invalid type: expected float. found: {}",
+            s
+        ))),
+    }
 }
