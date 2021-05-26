@@ -5,12 +5,15 @@ use serde_json::Value;
 
 use super::{Manufacturer, Turret};
 
+//TODO Consider a custom visitor for f64 after all considering the number of needed options.
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Ship {
     class_name: String,
     name: String,
-    description: Option<String>,
+    #[serde(default)]
+    description: String,
     career: String,
     role: String,
     size: usize,
