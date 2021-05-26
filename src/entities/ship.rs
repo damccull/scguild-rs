@@ -7,11 +7,13 @@ use super::{Manufacturer, Turret};
 
 //TODO Consider a custom visitor for f64 after all considering the number of needed options.
 
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Ship {
     class_name: String,
     name: String,
+    //TODO: Implement default for this and move all the defaults to the top level
     #[serde(default)]
     description: String,
     career: String,
