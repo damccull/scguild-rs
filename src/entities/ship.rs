@@ -8,7 +8,7 @@ use super::{Manufacturer, Turret};
 //TODO Consider a custom visitor for f64 after all considering the number of needed options.
 
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Ship {
     class_name: String,
@@ -37,7 +37,7 @@ pub struct Ship {
     insurance: Option<Insurance>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct DamageBeforeDestruction {
     // Aliases because json does not normalize key casing.
@@ -55,7 +55,7 @@ pub struct DamageBeforeDestruction {
     rear: Option<f64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct DamageBeforeDetach {
     // All these are individually named because of bad naming in json source.
@@ -94,7 +94,7 @@ pub struct DamageBeforeDetach {
     left_tail_fin_flap: Option<f64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct FlightCharacteristics {
     scm_speed: f64,
@@ -111,7 +111,7 @@ pub struct FlightCharacteristics {
     acceleration_g: ThrustDirectionValue,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct ThrustDirectionValue {
     #[serde(deserialize_with = "f64_deserializer")]
@@ -124,7 +124,7 @@ pub struct ThrustDirectionValue {
     maneuvering: f64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Propulsion {
     fuel_capacity: f64,
@@ -141,7 +141,7 @@ pub struct Propulsion {
     maneuvering_time_till_empty: f64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct QuantumTravel {
     speed: f64,
@@ -153,7 +153,7 @@ pub struct QuantumTravel {
     port_olisar_to_arc_corp_and_back: f64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Hardpoint {
     size: usize,
@@ -164,7 +164,7 @@ pub struct Hardpoint {
     weapon_sizes: Vec<usize>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Insurance {
     standard_claim_time: f64,

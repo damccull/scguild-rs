@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all(deserialize = "PascalCase", serialize = "camelCase"))]
 pub struct Turret {
     size: usize,
