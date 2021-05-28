@@ -5,8 +5,8 @@ use entities::Ship;
 
 use crate::entities::Manufacturer;
 
-mod entities;
 mod crypto;
+mod entities;
 
 async fn greet(req: HttpRequest) -> impl Responder {
     let name = req.match_info().get("name").unwrap_or("World");
@@ -33,14 +33,15 @@ async fn main() -> std::io::Result<()> {
                 });
             let ships_by_manufacturer: HashMap<String, Vec<String>> =
                 ships
-                    .into_iter()
+                    .iter()
                     .fold(HashMap::<String, Vec<String>>::new(), |mut acc, ship| {
                         acc.entry(ship.manufacturer.name.clone())
                             .or_insert_with(Vec::<String>::new)
-                            .push(ship.name);
+                            .push(ship.name.clone());
                         acc
                     });
-            let query = find_manufacturer_by_code(manufacturers, &String::from("cn"));
+            //let query = find_manufacturer_by_code(manufacturers, &String::from("cn"));
+            let query = find_ship_by_name(ships, "stalker");
             dbg!(query);
             // dbg!(ships_by_manufacturer.get_key_value("Anvil"));
         }
@@ -60,6 +61,13 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
+}
+
+fn find_ship_by_name(ships: Vec<Ship>, query: &str) -> Vec<Ship> {
+    ships
+        .into_iter()
+        .filter(|s| s.name.to_lowercase().contains(&query.to_lowercase()))
+        .collect()
 }
 
 fn find_manufacturer_by_name(manufacturers: Vec<Manufacturer>, query: &str) -> Vec<Manufacturer> {
