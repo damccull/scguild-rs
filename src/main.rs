@@ -53,8 +53,8 @@ async fn main() -> std::io::Result<()> {
             .route("/{name}", web::get().to(greet))
             .service(
                 web::scope("/api")
-                    .route("/{interaction}", web::get().to(api)),
                     .wrap(crypto::VerifyEd25519Signature)
+                    .route("/discord/{interaction}", web::get().to(api)),
             )
     })
     .bind(("127.0.0.1", 8080))?
