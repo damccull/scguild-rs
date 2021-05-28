@@ -6,7 +6,7 @@ use entities::Ship;
 use crate::entities::Manufacturer;
 
 mod entities;
-mod verify_ed25519_signature;
+mod crypto;
 
 async fn greet(req: HttpRequest) -> impl Responder {
     let name = req.match_info().get("name").unwrap_or("World");
@@ -53,8 +53,8 @@ async fn main() -> std::io::Result<()> {
             .route("/{name}", web::get().to(greet))
             .service(
                 web::scope("/api")
-                    .wrap(verify_ed25519_signature::VerifyEd25519Signature)
                     .route("/{interaction}", web::get().to(api)),
+                    .wrap(crypto::VerifyEd25519Signature)
             )
     })
     .bind(("127.0.0.1", 8080))?
