@@ -3,7 +3,7 @@
 mod common;
 
 #[actix_rt::test]
-async fn discord_api_sends_200_with_valid_data() {
+async fn api_sends_200_with_valid_data() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -25,7 +25,7 @@ async fn discord_api_sends_200_with_valid_data() {
 }
 
 #[actix_rt::test]
-async fn discord_api_sends_401_when_missing_ed25519_header() {
+async fn api_sends_401_when_missing_ed25519_header() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -45,7 +45,7 @@ async fn discord_api_sends_401_when_missing_ed25519_header() {
 }
 
 #[actix_rt::test]
-async fn discord_api_sends_401_when_missing_timestamp_header() {
+async fn api_sends_401_when_missing_timestamp_header() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -65,7 +65,7 @@ async fn discord_api_sends_401_when_missing_timestamp_header() {
 }
 
 #[actix_rt::test]
-async fn discord_api_sends_401_when_invalid_signature() {
+async fn api_sends_401_when_invalid_signature() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -86,7 +86,7 @@ async fn discord_api_sends_401_when_invalid_signature() {
 }
 
 #[actix_rt::test]
-async fn discord_api_sends_401_when_bad_hex() {
+async fn api_sends_401_when_bad_hex() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -108,7 +108,7 @@ async fn discord_api_sends_401_when_bad_hex() {
 }
 
 #[actix_rt::test]
-async fn discord_api_sends_401_when_wrong_signature_length() {
+async fn api_sends_401_when_wrong_signature_length() {
     // Arrange test
     let address = common::spawn_app();
 
