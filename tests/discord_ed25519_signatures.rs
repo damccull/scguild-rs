@@ -22,6 +22,7 @@ async fn api_sends_200_with_valid_data() {
 
     //Run assertions against the data
     assert!(response.status().is_success());
+    assert_eq!(response.text().await.unwrap(), "API requested path: testing");
 }
 
 #[actix_rt::test]
