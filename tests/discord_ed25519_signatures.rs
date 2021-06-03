@@ -3,7 +3,7 @@
 mod common;
 
 #[actix_rt::test]
-async fn discord_api_works_with_valid_data() {
+async fn discord_api_sends_200_with_valid_data() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -13,18 +13,19 @@ async fn discord_api_works_with_valid_data() {
     // Do the actions
     let response = client
         .get(&format!("{}/api/discord/testing", address))
+        .header("X-Signature-Ed25519", common::TEST_PUBLIC_KEY)
+        .header("X-Signature-Timestamp", common::TEST_TIMESTAMP)
+        .body(common::TEST_MESSAGE)
         .send()
         .await
         .expect("Failed to execute request.");
 
     //Run assertions against the data
     assert!(response.status().is_success());
-    assert_eq!(Some(0), response.content_length());
-    todo!();
 }
 
 #[actix_rt::test]
-async fn discord_sends_401_when_missing_ed25519_header() {
+async fn discord_api_sends_401_when_missing_ed25519_header() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -44,7 +45,7 @@ async fn discord_sends_401_when_missing_ed25519_header() {
 }
 
 #[actix_rt::test]
-async fn discord_sends_401_when_missing_timestamp_header() {
+async fn discord_api_sends_401_when_missing_timestamp_header() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -64,7 +65,7 @@ async fn discord_sends_401_when_missing_timestamp_header() {
 }
 
 #[actix_rt::test]
-async fn discord_sends_401_when_invalid_signature() {
+async fn discord_api_sends_401_when_invalid_signature() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -85,7 +86,7 @@ async fn discord_sends_401_when_invalid_signature() {
 }
 
 #[actix_rt::test]
-async fn discord_sends_401_when_bad_hex() {
+async fn discord_api_sends_401_when_bad_hex() {
     // Arrange test
     let address = common::spawn_app();
 
@@ -107,7 +108,7 @@ async fn discord_sends_401_when_bad_hex() {
 }
 
 #[actix_rt::test]
-async fn discord_sends_401_when_wrong_signature_length() {
+async fn discord_api_sends_401_when_wrong_signature_length() {
     // Arrange test
     let address = common::spawn_app();
 
