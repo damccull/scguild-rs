@@ -121,42 +121,6 @@ where
             dbg!(&res.headers());
             Ok(res)
         })
-
-        //------------
-
-        // println!("Hi from start. You requested: {}", req.path());
-        // // Note: Probably don't need this as middleware can be registered on a scope
-        // // // Don't even check this if it's not in the API path
-        // // if !req.path().starts_with("/api") {
-        // //     return Either::Left(self.service.call(req));
-        // // }
-
-        // // Grab the signature and timestamp from the headers and transform them to Option<&str>
-        // let sig = req
-        //     .headers()
-        //     .get("X-Signature-Ed25519")
-        //     .and_then(|signature| signature.to_str().ok());
-        // let timestamp = req
-        //     .headers()
-        //     .get("X-Signature-Timestamp")
-        //     .and_then(|timestamp| timestamp.to_str().ok());
-
-        // let message = req.
-
-        // if let (Some(signature), Some(timestamp)) = (sig, timestamp) {
-        //     verify("ok".to_string(), signature);
-        //     return Either::Left(self.service.call(req));
-        // }
-
-        // Either::Right(err(ErrorUnauthorized("not authorized")))
-        // let fut = self.service.call(req);
-
-        // Box::pin(async move {
-        //     let res = fut.await?;
-
-        //     println!("Hi from response");
-        //     Ok(res)
-        // })
     }
 }
 
