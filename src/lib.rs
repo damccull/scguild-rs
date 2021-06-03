@@ -25,7 +25,7 @@ pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
                             .wrap(crypto::VerifyEd25519Signature)
                             .route("/{interaction}", web::get().to(api)),
                     )
-                    .route("/{interaction}", web::get().to(api)),
+                    .route("/v1/{interaction}", web::get().to(api)),
             )
     })
     .listen(listener)?
@@ -39,11 +39,9 @@ async fn health_check() -> HttpResponse {
 }
 
 async fn api(req: HttpRequest) -> impl Responder {
-    let interaction = match req.match_info().get("interaction") {
-        Some(value) => value,
-        None => {
-            return HttpResponse::NotFound().finish();
-        }
-    };
-    HttpResponse::Ok().body(format!("API requested path: {}", &interaction))
+    let interaction = req
+        .match_info()
+        .get("interaction")
+        .unwrap_or("no such interaction");
+    format!("API requested path: {}", &interaction)
 }
