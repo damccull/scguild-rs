@@ -7,7 +7,9 @@ use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, dev::Serv
 mod crypto;
 mod entities;
 
-/// Returns a Server without awaiting it. This allows for integration testing.
+/// Returns a `Server` without awaiting it. This allows for integration testing.
+///
+/// Takes a `TcpListener`, expecting it to already be bound. This allows for easy integration testing.
 pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
     let server = HttpServer::new(|| {
         App::new()
