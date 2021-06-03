@@ -14,14 +14,14 @@ use actix_web::{
 };
 use futures::stream::StreamExt;
 
-use futures::future::{err, ok, Either, Ready};
+use futures::future::{ok, Ready};
 use futures::Future;
 
 use ed25519_dalek::{PublicKey, Signature, Verifier};
 
 //use crate::hex;
 
-use hex;
+//use hex;
 
 pub struct VerifyEd25519Signature;
 
@@ -103,8 +103,9 @@ where
             };
 
             // Create the message to validate by prepending the body with the signature timestamp
-            let mut message = Vec::from(timestamp);
-            message.extend_from_slice(body.bytes());
+            //let mut message = Vec::from(timestamp);
+            //message.extend_from_slice(body.bytes());
+            let message = body.bytes();
             dbg!(&signature, &timestamp, &message);
 
             match verify(message, timestamp, signature) {
@@ -124,12 +125,15 @@ where
     }
 }
 
-fn verify(message: Vec<u8>, timestamp: &str, signature: &str) -> Result<(), ValidationError> {
+fn verify(message: &[u8], timestamp: &str, signature: &str) -> Result<(), ValidationError> {
     let pubkey = hex::decode("0363649faf7a83d0bc0d9faa9c6a5efa8adc772190b8072210bc825895ca3570")
         .ok()
         .unwrap();
 
     // Concatenate timestamp+body then verify this against the provided signature.
+    let mut timestamped_message = Vec::from(timestamp);
+    timestamped_message.extend_from_slice(message);
+    dbg!(&timestamped_message);
 
     // TODO: Get this from dotenv and never unwrap it without error handling
     let public_key: PublicKey = PublicKey::from_bytes(pubkey.as_slice()).unwrap();
@@ -153,7 +157,7 @@ fn verify(message: Vec<u8>, timestamp: &str, signature: &str) -> Result<(), Vali
     let signature = Signature::new(signature_bytes);
     dbg!(&signature);
 
-    match public_key.verify(message.as_slice(), &signature) {
+    match public_key.verify(timestamped_message.as_slice(), &signature) {
         Ok(val) => val,
         Err(_) => return Err(ValidationError::InvalidSignatureError),
     };
@@ -172,11 +176,15 @@ pub enum ValidationError {
     InvalidSignatureError,
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn validate_returns_true_for_valid_signature() {}
+// #[cfg(test)]
+// mod tests {
+//     #[test]
+//     fn validate_returns_true_for_valid_signature() {
+//         todo!()
+//     }
 
-    #[test]
-    fn validate_returns_false_for_invalid_signature() {}
-}
+//     #[test]
+//     fn validate_returns_false_for_invalid_signature() {
+//         todo!()
+//     }
+// }
