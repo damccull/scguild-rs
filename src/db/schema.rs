@@ -1,6 +1,6 @@
 table! {
     manufacturers (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         name -> Text,
         abbreviation -> Text,
         description -> Nullable<Text>,
@@ -9,7 +9,7 @@ table! {
 
 table! {
     ship_blueprint_classifications (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         name -> Text,
         description -> Nullable<Text>,
     }
@@ -17,7 +17,7 @@ table! {
 
 table! {
     ship_blueprint_variant_join_classification (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         ship_blueprint_variant_id -> Integer,
         ship_blueprint_classification_id -> Integer,
     }
@@ -25,7 +25,7 @@ table! {
 
 table! {
     ship_blueprint_variants (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         name -> Text,
         ship_blueprint_id -> Integer,
         description -> Nullable<Text>,
@@ -34,7 +34,7 @@ table! {
 
 table! {
     ship_blueprints (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         name -> Text,
         manufacturer_id -> Integer,
         description -> Nullable<Text>,
