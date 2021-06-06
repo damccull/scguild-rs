@@ -3,10 +3,13 @@ use std::{env, error::Error, fs::File, io::BufReader, path::Path};
 use diesel::prelude::*;
 use tokio::sync::{mpsc, oneshot};
 
-use crate::db::models::Manufacturer;
-use crate::{db::models as dbmodels, entities};
+pub mod models;
+pub mod schema;
 
-use crate::db::schema::manufacturers::dsl::manufacturers as manufacturer_dsl;
+use crate::database::models::Manufacturer;
+use crate::{database::models as dbmodels, entities};
+
+use crate::database::schema::manufacturers::dsl::manufacturers as manufacturer_dsl;
 
 pub enum DatabaseMessage {
     GetManufacturers {
@@ -77,7 +80,8 @@ impl DatabaseActorHandle {
         Self { sender }
     }
 
-    pub async fn get_all_manufacturers(& self) -> Vec<Manufacturer> {
+    //TODO: Make this &self non-mutable when you figure out how
+    pub async fn get_all_manufacturers(&mut self) -> Vec<Manufacturer> {
         let (send, receive) = oneshot::channel();
         let msg = DatabaseMessage::GetManufacturers { respond_to: send };
 

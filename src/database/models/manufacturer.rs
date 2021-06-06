@@ -1,8 +1,8 @@
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::db::schema::manufacturers;
-use crate::db::schema::manufacturers::dsl::manufacturers as manufacturer_dsl;
+use crate::database::schema::manufacturers;
+use crate::database::schema::manufacturers::dsl::manufacturers as manufacturer_dsl;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Queryable, Insertable)]
 #[table_name = "manufacturers"]

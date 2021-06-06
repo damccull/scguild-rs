@@ -6,7 +6,7 @@ extern crate diesel;
 use std::{collections::HashMap, error::Error, fs::File, io::BufReader, net::TcpListener, path::Path};
 
 use actix_web::{web, App, HttpRequest, HttpServer, Responder};
-use database_actor::DatabaseActorHandle;
+use database::DatabaseActorHandle;
 use entities::Ship;
 use tokio::sync::mpsc;
 
@@ -14,15 +14,18 @@ use crate::entities::Manufacturer;
 
 mod crypto;
 mod entities;
-mod database_actor;
-mod db;
+mod database;
 
 use norseline::run;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    //Start the database actor
+    let mut dbhandle = DatabaseActorHandle::new();
+
+
     //test_stuff();
-    test_db().await;
+    test_db(&mut dbhandle).await;
 
     //------- TEMPORARILY DISABLED: This enables the web server
     // Create a TcpListener to pass to the server. This allows for easy integration testing.
@@ -31,9 +34,10 @@ async fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-async fn test_db() {
-    let dbhandle = DatabaseActorHandle::new();
-    dbg!(dbhandle.get_all_manufacturers().await);
+async fn test_db(db: &mut DatabaseActorHandle) {
+    //TODO: Make this non-mutable when you figure out how to fix the one in database_actor
+    
+    dbg!(db.get_all_manufacturers().await);
 }
 
 // fn test_stuff() {
