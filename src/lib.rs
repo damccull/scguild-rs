@@ -29,7 +29,7 @@ pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
                     .service(
                         web::scope("/discord")
                             .wrap(crypto::VerifyEd25519Signature)
-                            .route("/{interaction}", web::get().to(api)),
+                            .route("/{interaction}", web::get().to(discord_api)),
                     )
                     .route("/v1/{interaction}", web::get().to(api)),
             )
@@ -50,4 +50,11 @@ async fn api(req: HttpRequest) -> impl Responder {
         .get("interaction")
         .unwrap_or("no such interaction");
     format!("API requested path: {}", &interaction)
+}
+
+async fn discord_api(req: HttpRequest) -> impl Responder {
+    let interaction = req.match_info()
+    .get("interaction")
+    .unwrap_or("no such interation");
+    format!("Discord interaction requested: {}", &interaction)
 }
