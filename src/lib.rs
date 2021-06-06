@@ -11,11 +11,10 @@ use actix_web::{
 };
 
 mod crypto;
-pub mod entities;
-pub mod discord;
 pub mod database;
+pub mod discord;
+pub mod entities;
 pub mod fleet;
-
 
 /// Returns a `Server` without awaiting it. This allows for integration testing.
 ///
@@ -53,8 +52,9 @@ async fn api(req: HttpRequest) -> impl Responder {
 }
 
 async fn discord_api(req: HttpRequest) -> impl Responder {
-    let interaction = req.match_info()
-    .get("interaction")
-    .unwrap_or("no such interation");
+    let interaction = req
+        .match_info()
+        .get("interaction")
+        .unwrap_or("no such interation");
     format!("Discord interaction requested: {}", &interaction)
 }
