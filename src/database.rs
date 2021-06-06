@@ -71,6 +71,7 @@ pub struct DatabaseActorHandle {
 }
 
 impl DatabaseActorHandle {
+    #[allow(clippy:clippy::new_without_default)]
     pub fn new() -> Self {
         let (sender, receiver) = mpsc::channel(8);
         let actor = DatabaseActor::new(receiver);
