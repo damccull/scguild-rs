@@ -10,11 +10,11 @@ use actix_web::{
     dev::{Service, ServiceRequest, ServiceResponse, Transform},
     error::ErrorUnauthorized,
     web::{Buf, BytesMut},
-    Error, HttpMessage,
+    Error, HttpMessage, HttpRequest,
 };
 use futures::stream::StreamExt;
 
-use futures::future::{ok, Ready};
+use futures::future::{ready, ok, Ready};
 use futures::Future;
 
 use ed25519_dalek::{PublicKey, Signature, Verifier};
@@ -25,23 +25,24 @@ use ed25519_dalek::{PublicKey, Signature, Verifier};
 
 pub struct VerifyEd25519Signature;
 
-impl<S: 'static, B> Transform<S> for VerifyEd25519Signature
+impl<S: 'static, Req> Transform<S, ServiceRequest> for VerifyEd25519Signature
 where
-    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S: Service<ServiceRequest, Response = ServiceResponse<Req>, Error = Error>,
     S::Future: 'static,
-    B: 'static,
 {
-    type Request = ServiceRequest;
-    type Response = ServiceResponse<B>;
+    type Response = ServiceResponse<Req>;
     type Error = Error;
     type InitError = ();
     type Transform = VerifyEd25519SignatureMiddleware<S>;
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ok(VerifyEd25519SignatureMiddleware {
+        ready(Ok(VerifyEd25519SignatureMiddleware {
             service: Rc::new(RefCell::new(service)),
-        })
+        }))
+        // ok(VerifyEd25519SignatureMiddleware {
+        //     service: Rc::new(RefCell::new(service)),
+        // })
     }
 }
 
@@ -50,25 +51,21 @@ pub struct VerifyEd25519SignatureMiddleware<S> {
     // https://github.com/actix/examples/blob/ddfb4706425885bfffec0a13b216ff08f93a47d2/basics/middleware/src/read_request_body.rs#L36
     service: Rc<RefCell<S>>,
 }
-impl<S, B> Service for VerifyEd25519SignatureMiddleware<S>
+impl<S: 'static, Req> Service<ServiceRequest> for VerifyEd25519SignatureMiddleware<S>
 where
-    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error> + 'static,
+    S: Service<ServiceRequest, Response = ServiceResponse<Req>, Error = Error>,
     S::Future: 'static,
-    B: 'static,
 {
-    type Request = ServiceRequest;
-    type Response = ServiceResponse<B>;
+    type Response = ServiceResponse<Req>;
     type Error = Error;
     #[allow(clippy::type_complexity)]
-    //type Future = Either<S::Future, Ready<Result<Self::Response, Self::Error>>>;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
-    //type Future = Pin<Box<Either<S::Future, Ready<Result<Self::Response, Self::Error>>>>>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx)
     }
 
-    fn call(&mut self, mut req: ServiceRequest) -> Self::Future {
+    fn call(&self, mut req: ServiceRequest) -> Self::Future {
         let mut svc = self.service.clone();
 
         Box::pin(async move {
@@ -104,9 +101,9 @@ where
             // Create the message to validate by prepending the body with the signature timestamp
             //let mut message = Vec::from(timestamp);
             //message.extend_from_slice(body.bytes());
-            let message = body.bytes();
+            let message = body;
 
-            if let Err(e) = verify(message, timestamp, signature) {
+            if let Err(e) = verify(&message[..], timestamp, signature) {
                 return Err(ErrorUnauthorized("invalid signature"));
             }
 
