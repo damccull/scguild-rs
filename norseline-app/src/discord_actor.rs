@@ -2,7 +2,7 @@ use tokio::sync::{mpsc, oneshot};
 
 use crate::{
     database::{models::Manufacturer, DatabaseActorHandle},
-    fleet::FleetActorHandle,
+    fleet_actor::FleetActorHandle,
 };
 pub enum DiscordMessage {
     GetManufacturers {

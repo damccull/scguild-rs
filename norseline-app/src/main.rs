@@ -5,8 +5,8 @@ use std::{
 };
 
 use actix_web::{web, App, HttpRequest, HttpServer, Responder};
-use norseline::discord::DiscordActorHandle;
-use norseline::fleet::FleetActorHandle;
+use norseline::discord_actor::DiscordActorHandle;
+use norseline::fleet_actor::FleetActorHandle;
 use tokio::sync::mpsc;
 
 use norseline::database::DatabaseActorHandle;

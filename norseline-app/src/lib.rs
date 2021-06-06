@@ -10,11 +10,13 @@ use actix_web::{
     App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 
+use serde::{Deserialize, Serialize};
+
 mod crypto;
 pub mod database;
-pub mod discord;
+pub mod discord_actor;
 pub mod entities;
-pub mod fleet;
+pub mod fleet_actor;
 
 /// Returns a `Server` without awaiting it. This allows for integration testing.
 ///
@@ -28,7 +30,7 @@ pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
                     .service(
                         web::scope("/discord")
                             .wrap(crypto::VerifyEd25519Signature)
-                            .route("/{interaction}", web::get().to(discord_api)),
+                            .route("/{interaction}", web::post().to(discord_api)),
                     )
                     .route("/v1/{interaction}", web::get().to(api)),
             )
@@ -58,3 +60,5 @@ async fn discord_api(req: HttpRequest) -> impl Responder {
         .unwrap_or("no such interation");
     format!("Discord interaction requested: {}", &interaction)
 }
+
+
