@@ -12,7 +12,7 @@ async fn api_sends_200_with_valid_data() {
 
     // Do the actions
     let response = client
-        .get(&format!("{}/api/discord/testing", address))
+        .post(&format!("{}/api/discord/testing", address))
         .header("X-Signature-Ed25519", common::TEST_PUBLIC_KEY)
         .header("X-Signature-Timestamp", common::TEST_TIMESTAMP)
         .body(common::TEST_MESSAGE)
@@ -22,7 +22,7 @@ async fn api_sends_200_with_valid_data() {
 
     //Run assertions against the data
     assert!(response.status().is_success());
-    assert_eq!(response.text().await.unwrap(), "API requested path: testing");
+    assert_eq!(response.text().await.unwrap(), "Discord interaction requested: testing");
 }
 
 #[actix_rt::test]
