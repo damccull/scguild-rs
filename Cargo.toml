@@ -1,0 +1,3 @@
+[workspace]
+
+members = ["norseline-app", "discord-rs"]
