@@ -78,7 +78,6 @@ where
             while let Some(chunk) = stream.next().await {
                 body.extend_from_slice(&chunk?);
             }
-            dbg!(&body);
 
             // Grab the signature and timestamp from the headers and transform them to Option<&str>
             let signature = req
@@ -106,20 +105,12 @@ where
             //let mut message = Vec::from(timestamp);
             //message.extend_from_slice(body.bytes());
             let message = body.bytes();
-            dbg!(&signature, &timestamp, &message);
 
-            match verify(message, timestamp, signature) {
-                Ok(val) => {
-                    dbg!(val)
-                }
-                Err(er) => {
-                    dbg!(er);
-                    return Err(ErrorUnauthorized("invalid signature"));
-                }
+            if let Err(e) = verify(message, timestamp, signature) {
+                return Err(ErrorUnauthorized("invalid signature"));
             }
 
             let res = svc.call(req).await?;
-            dbg!(&res.headers());
             Ok(res)
         })
     }
@@ -133,7 +124,6 @@ fn verify(message: &[u8], timestamp: &str, signature: &str) -> Result<(), Valida
     // Concatenate timestamp+body then verify this against the provided signature.
     let mut timestamped_message = Vec::from(timestamp);
     timestamped_message.extend_from_slice(message);
-    dbg!(&timestamped_message);
 
     // TODO: Get this from dotenv and never unwrap it without error handling
     let public_key: PublicKey = PublicKey::from_bytes(pubkey.as_slice()).unwrap();
@@ -155,14 +145,12 @@ fn verify(message: &[u8], timestamp: &str, signature: &str) -> Result<(), Valida
             })?;
 
     let signature = Signature::new(signature_bytes);
-    dbg!(&signature);
 
     match public_key.verify(timestamped_message.as_slice(), &signature) {
         Ok(val) => val,
         Err(_) => return Err(ValidationError::InvalidSignatureError),
     };
 
-    dbg!(&public_key);
     Ok(())
 }
 #[derive(Debug)]
