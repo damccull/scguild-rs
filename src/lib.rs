@@ -1,4 +1,6 @@
 #![allow(unused)]
+#[macro_use]
+extern crate diesel;
 
 use std::net::TcpListener;
 
@@ -9,7 +11,11 @@ use actix_web::{
 };
 
 mod crypto;
-mod entities;
+pub mod entities;
+pub mod discord;
+pub mod database;
+pub mod fleet;
+
 
 /// Returns a `Server` without awaiting it. This allows for integration testing.
 ///

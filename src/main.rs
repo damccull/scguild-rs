@@ -1,20 +1,17 @@
 #![allow(unused)]
 
-#[macro_use]
-extern crate diesel;
-
-use std::{collections::HashMap, error::Error, fs::File, io::BufReader, net::TcpListener, path::Path};
+use std::{
+    collections::HashMap, error::Error, fs::File, io::BufReader, net::TcpListener, path::Path,
+};
 
 use actix_web::{web, App, HttpRequest, HttpServer, Responder};
-use database::DatabaseActorHandle;
-use entities::Ship;
+use norseline::discord::DiscordActorHandle;
+use norseline::fleet::FleetActorHandle;
 use tokio::sync::mpsc;
 
-use crate::entities::Manufacturer;
-
-mod crypto;
-mod entities;
-mod database;
+use norseline::database::DatabaseActorHandle;
+use norseline::entities::Manufacturer;
+use norseline::entities::Ship;
 
 use norseline::run;
 
@@ -22,21 +19,21 @@ use norseline::run;
 async fn main() -> std::io::Result<()> {
     //Start the database actor
     let mut dbhandle = DatabaseActorHandle::new();
+    let mut fleet_handle = FleetActorHandle::new();
+    let mut discord_handle = DiscordActorHandle::new(dbhandle.clone(), fleet_handle.clone());
 
-
-    //test_stuff();
-    test_db(&mut dbhandle).await;
+    dbg!(discord_handle.do_a_thing().await);
 
     //------- TEMPORARILY DISABLED: This enables the web server
     // Create a TcpListener to pass to the server. This allows for easy integration testing.
-    // let listener = TcpListener::bind("127.0.0.1:4201").expect("Failed to bind random port");
-    // run(listener)?.await
-    Ok(())
+    let listener = TcpListener::bind("127.0.0.1:4201").expect("Failed to bind random port");
+    run(listener)?.await
+    //Ok(())
 }
 
 async fn test_db(db: &mut DatabaseActorHandle) {
     //TODO: Make this non-mutable when you figure out how to fix the one in database_actor
-    
+
     dbg!(db.get_all_manufacturers().await);
 }
 
@@ -69,4 +66,3 @@ async fn test_db(db: &mut DatabaseActorHandle) {
 //         Err(e) => panic!("Error reading ships.json: {:?}", e),
 //     }
 // }
-
