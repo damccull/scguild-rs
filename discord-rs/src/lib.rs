@@ -24,7 +24,7 @@ struct DiscordInteraction {
     /// A continuation token for responding to the interaction. String.
     token: String,
     /// A read-only property. Currently always `1`.
-    version: usize,
+    version: u8,
     /// For components, the message they were attached to. Discord message object.
     message: Option<String>,
 }
