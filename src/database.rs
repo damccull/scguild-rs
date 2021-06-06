@@ -18,7 +18,7 @@ pub enum DatabaseMessage {
 }
 
 pub struct DatabaseActor {
-    pub receiver: mpsc::Receiver<DatabaseMessage>,
+    receiver: mpsc::Receiver<DatabaseMessage>,
     sqlite_connection: SqliteConnection,
 }
 
