@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Serialize, Deserialize)]
 struct DiscordInteraction {
     /// The ID of the interaction. Discord Snowflake.
@@ -62,3 +64,11 @@ struct NameValuePair<T, U> {
     name: T,
     value: U,
 }
+
+// #[cfg(test)]
+// mod tests {
+//     #[test]
+//     fn it_works() {
+//         assert_eq!(2 + 2, 4);
+//     }
+// }
