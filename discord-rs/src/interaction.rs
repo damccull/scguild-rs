@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    application_command::ApplicationCommandOptionType, messages::MessageComponentType,
+    application_command::ApplicationCommandOptionType, message_components::MessageComponentType,
     snowflake::Snowflake,
 };
 
