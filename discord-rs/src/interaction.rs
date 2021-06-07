@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::snowflake::Snowflake;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Interaction {
     /// The ID of the interaction.
     pub id: Snowflake,
@@ -30,7 +30,7 @@ pub struct Interaction {
     pub message: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GuildMember {
     pub user: User,
     pub roles: Vec<String>,
@@ -44,7 +44,7 @@ pub struct GuildMember {
     pub deaf: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct User {
     pub id: u64,
     pub username: String,
@@ -53,20 +53,20 @@ pub struct User {
     pub public_flags: usize,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct InteractionData {
     pub options: Vec<NameValuePair<String, String>>,
     pub name: String,
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NameValuePair<T, U> {
     pub name: T,
     pub value: U,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum InteractionType {
     Ping = 1,

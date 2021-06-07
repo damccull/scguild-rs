@@ -1,5 +1,7 @@
 use crate::snowflake::Snowflake;
+use serde::{Deserialize, Serialize};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// The base "command" model.
 pub struct ApplicationCommand {
     /// The unique ID of the command.
@@ -16,6 +18,7 @@ pub struct ApplicationCommand {
     pub default_permission: Option<bool>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// An option to be added to an `ApplicationCommand` or SubCommand type `ApplicationCommandOptoin`
 pub struct ApplicationCommandOption {
     /// An `ApplicationCommandOptionType` representing the kind of command option this is.
@@ -32,6 +35,7 @@ pub struct ApplicationCommandOption {
     pub options: Option<Box<ApplicationCommandOption>>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// If choices are specified for a command, they are the only valid choices a user can pick.
 pub struct ApplicationCommandOptionChoice {
     /// 1-100 character choice name
@@ -40,6 +44,7 @@ pub struct ApplicationCommandOptionChoice {
     pub value: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[repr(u8)] // Ensure this enum is stored and represented as a u8
 pub enum ApplicationCommandOptionType {
     SubCommand = 1,

@@ -1,5 +1,7 @@
-use crate::snowflake::{self, Snowflake};
+use crate::snowflake::Snowflake;
+use serde::{Deserialize, Serialize};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// Returned when fetching the permissions for a command in a guild.
 pub struct GuildApplicationCommandPermissions {
     /// The ID of the command
@@ -12,6 +14,7 @@ pub struct GuildApplicationCommandPermissions {
     pub permissions: Vec<ApplicationCommandPermissions>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// Application command permissions allow you to enable or disable
 /// commands for specific users or roles within a guild.
 pub struct ApplicationCommandPermissions {
@@ -23,8 +26,9 @@ pub struct ApplicationCommandPermissions {
     pub permission: bool,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum ApplicationCommandPermissionType {
     Role = 1,
-    User = 2
+    User = 2,
 }
