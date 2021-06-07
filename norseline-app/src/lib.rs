@@ -10,9 +10,10 @@ use actix_web::{
     App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 
+use middleware::ed25519_signatures;
 use serde::{Deserialize, Serialize};
 
-mod crypto;
+mod middleware;
 pub mod database;
 pub mod discord_actor;
 pub mod entities;
@@ -29,7 +30,7 @@ pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
                 web::scope("/api")
                     .service(
                         web::scope("/discord")
-                            .wrap(crypto::VerifyEd25519Signature)
+                            .wrap(ed25519_signatures::VerifyEd25519Signature)
                             .route("/{interaction}", web::post().to(discord_api)),
                     )
                     .route("/v1/{interaction}", web::get().to(api)),
