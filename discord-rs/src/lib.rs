@@ -1,4 +1,5 @@
 pub mod interaction;
+pub mod interaction_response;
 pub mod application_command;
 pub mod snowflake;
 pub mod permissions;
