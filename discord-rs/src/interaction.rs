@@ -98,7 +98,7 @@ pub struct ApplicationCommandInteractionDataOption {
     /// The value of the pair
     value: Option<String>,
     /// Present if this option is a group or subcommand
-    options: Option<Box<Vec<ApplicationCommandInteractionDataOption>>>,
+    options: Option<Vec<ApplicationCommandInteractionDataOption>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
