@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate bitflags;
+
 pub mod interaction;
 pub mod interaction_response;
 pub mod application_command;
