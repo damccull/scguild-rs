@@ -3,8 +3,9 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    application_command::ApplicationCommandOptionType, message_components::MessageComponentType,
-    snowflake::Snowflake,
+    application_command::ApplicationCommandOptionType, channel::PartialChannel,
+    member::PartialGuildMember, message_components::MessageComponentType, role::Role,
+    snowflake::Snowflake, user::User,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -50,15 +51,6 @@ pub struct GuildMember {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct User {
-    pub id: u64,
-    pub username: String,
-    pub avatar: String,
-    pub discriminator: String,
-    pub public_flags: usize,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ApplicationCommandInteractionData {
     /// The ID of the invoked command
     pub id: Snowflake,
@@ -81,13 +73,6 @@ pub struct ApplicationCommandInteractionDataResolved {
     pub roles: Option<HashMap<Snowflake, Role>>,
     pub channels: Option<HashMap<Snowflake, PartialChannel>>,
 }
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PartialGuildMember {}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Role {}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PartialChannel {}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ApplicationCommandInteractionDataOption {
