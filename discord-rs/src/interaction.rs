@@ -9,7 +9,7 @@ pub struct Interaction {
     /// The ID of the application this interaction is for.
     pub application_id: Snowflake,
     /// The type of interaction. Discord InteractionType
-    pub r#type: usize,
+    pub r#type: InteractionType,
     /// The command data payload. Discord ApplicationCommandInteractionData
     pub data: Option<InteractionData>,
     /// The guild interaction was sent from.
@@ -64,6 +64,14 @@ pub struct InteractionData {
 pub struct NameValuePair<T, U> {
     pub name: T,
     pub value: U,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[repr(u8)]
+pub enum InteractionType {
+    Ping = 1,
+    ApplicationCommand = 2,
+    MessageComponent = 3,
 }
 
 // #[cfg(test)]
