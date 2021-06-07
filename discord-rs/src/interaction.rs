@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::snowflake::Snowflake;
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Interaction {
+pub struct Interaction {
     /// The ID of the interaction.
     pub id: Snowflake,
     /// The ID of the application this interaction is for.
@@ -31,7 +31,7 @@ struct Interaction {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct GuildMember {
+pub struct GuildMember {
     pub user: User,
     pub roles: Vec<String>,
     pub premium_since: Option<String>,
@@ -45,7 +45,7 @@ struct GuildMember {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct User {
+pub struct User {
     pub id: u64,
     pub username: String,
     pub avatar: String,
@@ -54,14 +54,14 @@ struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct InteractionData {
+pub struct InteractionData {
     pub options: Vec<NameValuePair<String, String>>,
     pub name: String,
     pub id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct NameValuePair<T, U> {
+pub struct NameValuePair<T, U> {
     pub name: T,
     pub value: U,
 }
