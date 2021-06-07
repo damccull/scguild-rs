@@ -16,7 +16,7 @@ pub struct ApplicationCommand {
     pub default_permission: Option<bool>,
 }
 
-///
+/// An option to be added to an `ApplicationCommand` or SubCommand type `ApplicationCommandOptoin`
 pub struct ApplicationCommandOption {
     /// An `ApplicationCommandOptionType` representing the kind of command option this is.
     pub r#type: ApplicationCommandOptionType,
