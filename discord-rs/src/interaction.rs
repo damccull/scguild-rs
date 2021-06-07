@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     application_command::ApplicationCommandOptionType, channel::PartialChannel,
-    member::PartialGuildMember, message_components::MessageComponentType, role::Role,
+    guild_member::PartialGuildMember, message_components::MessageComponentType, role::Role,
     snowflake::Snowflake, user::User,
 };
 

@@ -9,5 +9,5 @@ pub mod permissions;
 pub mod message_components;
 pub mod user;
 pub mod role;
-pub mod member;
+pub mod guild_member;
 pub mod channel;
