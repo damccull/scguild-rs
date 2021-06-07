@@ -1,6 +1,11 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
-use crate::snowflake::Snowflake;
+use crate::{
+    application_command::ApplicationCommandOptionType, messages::MessageComponentType,
+    snowflake::Snowflake,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Interaction {
@@ -11,7 +16,7 @@ pub struct Interaction {
     /// The type of interaction. Discord InteractionType
     pub r#type: InteractionType,
     /// The command data payload. Discord ApplicationCommandInteractionData
-    pub data: Option<InteractionData>,
+    pub data: Option<ApplicationCommandInteractionData>,
     /// The guild interaction was sent from.
     pub guild_id: Option<Snowflake>,
     /// The channel interaction was sent from.
@@ -54,10 +59,46 @@ pub struct User {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct InteractionData {
-    pub options: Vec<NameValuePair<String, String>>,
+pub struct ApplicationCommandInteractionData {
+    /// The ID of the invoked command
+    pub id: Snowflake,
+    /// The name of the invoked command
     pub name: String,
-    pub id: String,
+    /// Converted users + roles + channels
+    pub resolved: Option<ApplicationCommandInteractionDataResolved>,
+    /// The parameters + values from the user
+    pub options: Option<Vec<ApplicationCommandInteractionDataOption>>,
+    /// For components, the custom_id of the component
+    pub custom_id: String,
+    /// For components, the type of the component
+    pub component_type: MessageComponentType,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ApplicationCommandInteractionDataResolved {
+    pub users: HashMap<Snowflake, User>,
+    pub members: Option<HashMap<Snowflake, PartialGuildMember>>,
+    pub roles: Option<HashMap<Snowflake, Role>>,
+    pub channels: Option<HashMap<Snowflake, PartialChannel>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PartialGuildMember {}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Role {}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PartialChannel {}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ApplicationCommandInteractionDataOption {
+    /// The name of the parameter
+    name: String,
+    /// The type of Application Command Option this is
+    r#type: ApplicationCommandOptionType,
+    /// The value of the pair
+    value: Option<String>,
+    /// Present if this option is a group or subcommand
+    options: Option<Box<Vec<ApplicationCommandInteractionDataOption>>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
