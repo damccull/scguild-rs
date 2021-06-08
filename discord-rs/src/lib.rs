@@ -11,3 +11,4 @@ pub mod user;
 pub mod role;
 pub mod guild_member;
 pub mod channel;
+pub mod embed;
