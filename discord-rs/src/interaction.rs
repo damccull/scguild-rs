@@ -14,9 +14,9 @@ pub struct Interaction {
     pub id: Snowflake,
     /// The ID of the application this interaction is for.
     pub application_id: Snowflake,
-    /// The type of interaction. Discord InteractionType
+    /// The type of interaction. Discord InteractionType.
     pub r#type: InteractionType,
-    /// The command data payload. Discord ApplicationCommandInteractionData
+    /// The command data payload. Discord ApplicationCommandInteractionData.
     pub data: Option<ApplicationCommandInteractionData>,
     /// The guild interaction was sent from.
     pub guild_id: Option<Snowflake>,
@@ -52,17 +52,17 @@ pub struct GuildMember {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ApplicationCommandInteractionData {
-    /// The ID of the invoked command
+    /// The ID of the invoked command.
     pub id: Snowflake,
-    /// The name of the invoked command
+    /// The name of the invoked command.
     pub name: String,
-    /// Converted users + roles + channels
+    /// Converted users + roles + channels.
     pub resolved: Option<ApplicationCommandInteractionDataResolved>,
-    /// The parameters + values from the user
+    /// The parameters + values from the user.
     pub options: Option<Vec<ApplicationCommandInteractionDataOption>>,
-    /// For components, the custom_id of the component
+    /// For components, the custom_id of the component.
     pub custom_id: String,
-    /// For components, the type of the component
+    /// For components, the type of the component.
     pub component_type: MessageComponentType,
 }
 
@@ -76,13 +76,13 @@ pub struct ApplicationCommandInteractionDataResolved {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ApplicationCommandInteractionDataOption {
-    /// The name of the parameter
+    /// The name of the parameter.
     name: String,
-    /// The type of Application Command Option this is
+    /// The type of Application Command Option this is.
     r#type: ApplicationCommandOptionType,
-    /// The value of the pair
+    /// The value of the pair.
     value: Option<String>,
-    /// Present if this option is a group or subcommand
+    /// Present if this option is a group or subcommand.
     options: Option<Vec<ApplicationCommandInteractionDataOption>>,
 }
 
