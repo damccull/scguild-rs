@@ -1,5 +1,7 @@
-//TODO https://discord.com/developers/docs/interactions/slash-commands#responding-to-an-interaction
+//TODO https://discord.com/developers/docs/interactions/slash-commands#interaction-response
 use serde::{Deserialize, Serialize};
+
+use crate::embed::Embed;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct InteractionResponse {

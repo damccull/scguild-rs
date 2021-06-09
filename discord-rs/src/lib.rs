@@ -12,3 +12,6 @@ pub mod role;
 pub mod guild_member;
 pub mod channel;
 pub mod embed;
+pub mod channel_mention;
+pub mod allowed_mentions;
+pub mod attachment;
