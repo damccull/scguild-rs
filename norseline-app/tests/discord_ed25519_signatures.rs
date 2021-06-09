@@ -22,7 +22,10 @@ async fn api_sends_200_with_valid_data() {
 
     //Run assertions against the data
     assert!(response.status().is_success());
-    assert_eq!(response.text().await.unwrap(), "Discord interaction requested: testing");
+    assert_eq!(
+        response.text().await.unwrap(),
+        "Discord interaction requested: testing"
+    );
 }
 
 #[actix_rt::test]
@@ -98,7 +101,10 @@ async fn api_sends_401_when_bad_hex() {
     let response = client
         .get(&format!("{}/api/discord/testing", address))
         // Replacing all `f`s with `z`s will break the hex decoder
-        .header("X-Signature-Ed25519", common::TEST_PUBLIC_KEY.replace("f", "z"))
+        .header(
+            "X-Signature-Ed25519",
+            common::TEST_PUBLIC_KEY.replace("f", "z"),
+        )
         .header("X-Signature-Timestamp", common::TEST_TIMESTAMP)
         .body(common::TEST_MESSAGE)
         .send()
@@ -120,7 +126,10 @@ async fn api_sends_401_when_wrong_signature_length() {
     let response = client
         .get(&format!("{}/api/discord/testing", address))
         // Replacing all `f`s with nothing will break the string length for the key
-        .header("X-Signature-Ed25519", common::TEST_PUBLIC_KEY.replace("f", ""))
+        .header(
+            "X-Signature-Ed25519",
+            common::TEST_PUBLIC_KEY.replace("f", ""),
+        )
         .header("X-Signature-Timestamp", common::TEST_TIMESTAMP)
         .body(common::TEST_MESSAGE)
         .send()

@@ -14,7 +14,7 @@ use actix_web::{
 };
 use futures::stream::StreamExt;
 
-use futures::future::{ready, ok, Ready};
+use futures::future::{ok, ready, Ready};
 use futures::Future;
 
 use ed25519_dalek::{PublicKey, Signature, Verifier};

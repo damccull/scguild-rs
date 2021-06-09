@@ -1,8 +1,7 @@
-
-mod ship;
 mod manufacturer;
+mod ship;
 mod turret;
 
-pub use ship::*;
 pub use manufacturer::*;
+pub use ship::*;
 pub use turret::*;

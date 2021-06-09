@@ -36,5 +36,8 @@ async fn api_sends_200_with_correct_endpoint() {
 
     //Run assertions against the data
     assert_eq!(response.status().as_u16(), 200);
-    assert_eq!(response.text().await.unwrap(), "API requested path: testing");
+    assert_eq!(
+        response.text().await.unwrap(),
+        "API requested path: testing"
+    );
 }

@@ -13,11 +13,11 @@ use actix_web::{
 use middleware::ed25519_signatures;
 use serde::{Deserialize, Serialize};
 
-mod middleware;
 pub mod database;
 pub mod discord_actor;
 pub mod entities;
 pub mod fleet_actor;
+mod middleware;
 
 /// Returns a `Server` without awaiting it. This allows for integration testing.
 ///
@@ -61,5 +61,3 @@ async fn discord_api(req: HttpRequest) -> impl Responder {
         .unwrap_or("no such interation");
     format!("Discord interaction requested: {}", &interaction)
 }
-
-
