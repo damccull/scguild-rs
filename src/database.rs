@@ -1,6 +1,5 @@
 use std::{env, error::Error, fs::File, io::BufReader, path::Path};
 
-use diesel::prelude::*;
 use tokio::sync::{mpsc, oneshot};
 
 pub mod models;
@@ -8,8 +7,6 @@ pub mod schema;
 
 use crate::database::models::Manufacturer;
 use crate::{database::models as dbmodels, entities};
-
-use crate::database::schema::manufacturers::dsl::manufacturers as manufacturer_dsl;
 
 pub enum DatabaseMessage {
     GetManufacturers {

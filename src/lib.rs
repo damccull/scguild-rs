@@ -1,6 +1,4 @@
 #![allow(unused)]
-#[macro_use]
-extern crate diesel;
 
 use std::net::TcpListener;
 
