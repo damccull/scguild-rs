@@ -8,8 +8,11 @@ use actix_web::{
     App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 
+use discord_actor::DiscordActorHandle;
+use fleet_actor::FleetActorHandle;
 use middleware::ed25519_signatures;
 use serde::{Deserialize, Serialize};
+use sqlx::SqlitePool;
 
 pub mod database;
 pub mod discord_actor;
@@ -20,7 +23,10 @@ mod middleware;
 /// Returns a `Server` without awaiting it. This allows for integration testing.
 ///
 /// Takes a `TcpListener`, expecting it to already be bound. This allows for easy integration testing.
-pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener, db_pool: SqlitePool) -> Result<Server, std::io::Error> {
+    let mut fleet_handle = FleetActorHandle::new();
+    let mut discord_handle = DiscordActorHandle::new(db_pool.clone(), fleet_handle.clone());
+
     let server = HttpServer::new(|| {
         App::new()
             .route("/health_check", web::get().to(health_check))

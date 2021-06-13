@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+use sqlx::{Connection, Executor, SqliteConnection, SqlitePool};
+
 use std::net::TcpListener;
 pub struct TestApp {
     pub address: String,
@@ -19,19 +21,15 @@ pub async fn spawn_app() -> TestApp {
     // Create the database in postgres
     let db_pool = configure_database(&configuration.database).await;
 
-    // let db_pool = PgPool::connect(&configuration.database.connection_string())
-    //     .await
-    //     .expect("Failed to connect to Postgres.");
-
     let server = run(listener, db_pool.clone()).expect("Failed to bind address.");
     let _ = tokio::spawn(server);
 
     TestApp { address, db_pool }
 }
 
-pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
+pub async fn configure_database(config: &DatabaseSettings) -> SqlitePool {
     // Create the database
-    let mut connection = PgConnection::connect(&config.connection_string_without_db())
+    let mut connection = SqliteConnection::connect(&config.connection_string_without_db())
         .await
         .expect("Failed to connect to Postgres.");
     connection

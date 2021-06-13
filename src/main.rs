@@ -9,7 +9,6 @@ use norseline::discord_actor::DiscordActorHandle;
 use norseline::fleet_actor::FleetActorHandle;
 use tokio::sync::mpsc;
 
-use norseline::database::DatabaseActorHandle;
 use norseline::entities::Manufacturer;
 use norseline::entities::Ship;
 
@@ -17,17 +16,20 @@ use norseline::run;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    //Start the database actor
-    let mut dbhandle = DatabaseActorHandle::new();
-    let mut fleet_handle = FleetActorHandle::new();
-    let mut discord_handle = DiscordActorHandle::new(dbhandle.clone(), fleet_handle.clone());
+    // Panic if config can't be read
+    let configuration = get_configuration().expect("Failed to read configuration");
+
+    // Create a database connection for the web server.
+    let db_pool = PgPool::connect(&configuration.database.connection_string())
+        .await
+        .expect("Failed to connect to Postgres.");
 
     dbg!(discord_handle.do_a_thing().await);
 
     //------- TEMPORARILY DISABLED: This enables the web server
     // Create a TcpListener to pass to the server. This allows for easy integration testing.
     let listener = TcpListener::bind("127.0.0.1:4201").expect("Failed to bind random port");
-    run(listener)?.await
+    run(listener, db_pool)?.await
     //Ok(())
 }
 

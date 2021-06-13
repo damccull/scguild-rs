@@ -1,9 +1,7 @@
+use sqlx::SqlitePool;
 use tokio::sync::{mpsc, oneshot};
 
-use crate::{
-    database::{models::Manufacturer, DatabaseActorHandle},
-    fleet_actor::FleetActorHandle,
-};
+use crate::{database::models::Manufacturer, fleet_actor::FleetActorHandle};
 pub enum DiscordMessage {
     GetManufacturers {
         respond_to: oneshot::Sender<Vec<Manufacturer>>,
@@ -12,19 +10,19 @@ pub enum DiscordMessage {
 
 pub struct DiscordActor {
     receiver: mpsc::Receiver<DiscordMessage>,
-    db_handle: DatabaseActorHandle,
+    db_pool: SqlitePool,
     fleet_handle: FleetActorHandle,
 }
 
 impl DiscordActor {
     pub fn new(
         receiver: mpsc::Receiver<DiscordMessage>,
-        db_handle: DatabaseActorHandle,
+        db_handle: SqlitePool,
         fleet_handle: FleetActorHandle,
     ) -> Self {
         DiscordActor {
             receiver,
-            db_handle,
+            db_pool: db_handle,
             fleet_handle,
         }
     }
@@ -32,7 +30,13 @@ impl DiscordActor {
     pub async fn handle_message(&mut self, msg: DiscordMessage) {
         match msg {
             DiscordMessage::GetManufacturers { respond_to } => {
-                let result = self.db_handle.get_all_manufacturers().await;
+                let result = sqlx::query!(
+                    r#"
+                    SELECT id, name, abbreviation, description
+                    FROM manufacturers 
+                    "#,
+                )
+                .fetch(&self.db_pool);
                 respond_to.send(result);
             }
         }
@@ -51,7 +55,7 @@ pub struct DiscordActorHandle {
 }
 
 impl DiscordActorHandle {
-    pub fn new(db_handle: DatabaseActorHandle, fleet_handle: FleetActorHandle) -> Self {
+    pub fn new(db_handle: SqlitePool, fleet_handle: FleetActorHandle) -> Self {
         let (sender, receiver) = mpsc::channel(8);
         let actor = DiscordActor::new(receiver, db_handle, fleet_handle);
 
@@ -60,7 +64,7 @@ impl DiscordActorHandle {
         Self { sender }
     }
 
-    pub async fn do_a_thing(&mut self) -> Vec<Manufacturer> {
+    pub async fn get_all_manufacturers(&mut self) -> Vec<Manufacturer> {
         let (send, receive) = oneshot::channel();
         let msg = DiscordMessage::GetManufacturers { respond_to: send };
 
