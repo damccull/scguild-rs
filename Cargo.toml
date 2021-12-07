@@ -54,8 +54,8 @@ tracing-subscriber = { version = "0.2.12", features = [
 thiserror = "1.0.30"
 
 
-# [dependencies.ed25519-dalek]
-# version = "1"
+[dependencies.ed25519-dalek]
+version = "1"
 
 [dev-dependencies]
 actix-rt = "2"

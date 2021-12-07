@@ -4,6 +4,7 @@
 //! settings. It may also contain individual settings that don't fit into an existing
 //! category and don't warrant an entirely new subcategory.
 
+use ed25519_dalek::PublicKey;
 use std::convert::{TryFrom, TryInto};
 
 use serde_aux::field_attributes::deserialize_number_from_string;
@@ -12,6 +13,8 @@ use sqlx::{
     ConnectOptions,
 };
 use tracing::log::LevelFilter;
+
+use crate::serde_helpers::deserialize_discord_public_key_from_string;
 
 /// Initializes the server's settings from configuration files and environment variables
 /// and returns a [`Settings`] struct.
@@ -106,7 +109,8 @@ pub struct ApplicationSettings {
 
 #[derive(Clone, serde::Deserialize)]
 pub struct DiscordSettings {
-    pub public_key: String,
+    #[serde(deserialize_with = "deserialize_discord_public_key_from_string")]
+    public_key: PublicKey,
 }
 
 /// Represents the environment in which the server is running.
