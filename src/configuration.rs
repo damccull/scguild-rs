@@ -54,6 +54,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub discord: DiscordSettings,
 }
 
 /// Represents database specific settings.
@@ -101,6 +102,11 @@ pub struct ApplicationSettings {
     pub port: u16,
     pub host: String,
     pub base_url: String,
+}
+
+#[derive(Clone, serde::Deserialize)]
+pub struct DiscordSettings {
+    pub public_key: String,
 }
 
 /// Represents the environment in which the server is running.
