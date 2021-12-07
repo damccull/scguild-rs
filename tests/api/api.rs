@@ -1,7 +1,5 @@
 //! tests/api.rs
 
-mod common;
-
 #[actix_rt::test]
 async fn api_sends_404_with_missing_endpoint() {
     // Arrange test
