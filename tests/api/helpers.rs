@@ -1,9 +1,15 @@
-
-use norseline::{telemetry::{get_subscriber, init_subscriber}, configuration::{get_configuration, DatabaseSettings}, application::{Application, get_connection_pool}};
+use norseline::{
+    application::{get_connection_pool, Application},
+    configuration::{get_configuration, DatabaseSettings},
+    telemetry::{get_subscriber, init_subscriber},
+};
 use once_cell::sync::Lazy;
+use rand_dalek::rngs::OsRng;
 use sqlx::{postgres::PgPoolOptions, ConnectOptions, Connection, Executor, PgConnection, PgPool};
 use tracing::log::LevelFilter;
 use uuid::Uuid;
+
+use ed25519_dalek::Keypair;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
@@ -22,6 +28,7 @@ pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
     pub port: u16,
+    pub discord_keypair: Keypair,
 }
 
 impl TestApp {
@@ -30,11 +37,17 @@ impl TestApp {
         // Set up logging
         Lazy::force(&TRACING);
 
+        // Generate fake discord ed25519 keypair
+        let mut csprng = OsRng {};
+        let keypair: Keypair = Keypair::generate(&mut csprng);
+
         // Set up config with random db name
         let configuration = {
             let mut c = get_configuration().expect("Failed to load configuration.");
             c.database.database_name = Uuid::new_v4().to_string();
             c.application.port = 0;
+            c.discord.public_key = keypair.public;
+
             c
         };
 
@@ -54,6 +67,7 @@ impl TestApp {
             address: format!("http://localhost:{}", application_port),
             db_pool: get_connection_pool(&configuration.database),
             port: application_port,
+            discord_keypair: keypair,
         };
 
         test_app
