@@ -3,7 +3,7 @@ use std::num::NonZeroU64;
 use crate::helpers::TestApp;
 use actix_http::StatusCode;
 use chrono::Utc;
-use ed25519_dalek::{Keypair, Signature, Signer};
+use ed25519_dalek::Signer;
 use serde::Deserialize;
 use twilight_model::{
     application::interaction::{self, InteractionType},
