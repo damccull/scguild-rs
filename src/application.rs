@@ -9,8 +9,11 @@ use actix_web::{
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use tracing_actix_web::TracingLogger;
 
+use ed25519_dalek::PublicKey;
+
 use crate::{
     configuration::{DatabaseSettings, Settings},
+    middleware::ed25519_signatures,
     routes::{api, discord_api, health_check},
 };
 
@@ -39,6 +42,7 @@ impl Application {
             listener,
             connection_pool,
             configuration.application.base_url,
+            configuration.discord.public_key,
         )?;
 
         Ok(Self { port, server })
@@ -54,7 +58,12 @@ impl Application {
 /// Returns a `Server` without awaiting it. This allows for integration testing.
 ///
 /// Takes a `TcpListener`, expecting it to already be bound. This allows for easy integration testing.
-fn run(listener: TcpListener, db_pool: PgPool, base_url: String) -> Result<Server, std::io::Error> {
+fn run(
+    listener: TcpListener,
+    db_pool: PgPool,
+    base_url: String,
+    discord_public_key: PublicKey,
+) -> Result<Server, std::io::Error> {
     // Wrap shared things in smart pointers
     // let db_pool = Data::new(db_pool);
     let base_url = Data::new(base_url);
@@ -78,8 +87,10 @@ fn run(listener: TcpListener, db_pool: PgPool, base_url: String) -> Result<Serve
                 web::scope("/api")
                     .service(
                         web::scope("/discord")
-                            //.wrap(ed25519_signatures::VerifyEd25519Signature)
-                            .route("/{interaction}", web::post().to(discord_api)),
+                            .wrap(ed25519_signatures::VerifyEd25519Signature::new(
+                                discord_public_key,
+                            ))
+                            .route("/", web::post().to(discord_api)),
                     )
                     .route("/v1/{interaction}", web::get().to(api)),
             )
