@@ -4,8 +4,9 @@ use crate::helpers::TestApp;
 use actix_http::StatusCode;
 use chrono::Utc;
 use ed25519_dalek::{Keypair, Signature, Signer};
+use serde::Deserialize;
 use twilight_model::{
-    application::interaction::{self, Interaction, InteractionType},
+    application::interaction::{self, InteractionType},
     id::{ApplicationId, InteractionId},
 };
 
@@ -44,10 +45,16 @@ async fn discord_api_responds_with_pong_when_given_ping() {
 
     let status = response.status();
 
-    let json = response.json::<Interaction>().await;
-    dbg!(json);
+    #[derive(Debug, Deserialize)]
+    struct Pong {
+        #[serde(rename = "type")]
+        pub interaction_type: u8,
+    }
+
+    let json = response.json::<Pong>().await;
+    dbg!(&json);
 
     // Assert
     assert_eq!(status, StatusCode::OK);
-    assert!(false);
+    assert_eq!(json.unwrap().interaction_type, 1_u8);
 }
