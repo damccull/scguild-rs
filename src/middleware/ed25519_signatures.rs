@@ -1,27 +1,16 @@
-use std::{
-    cell::RefCell,
-    convert::TryInto,
-    pin::Pin,
-    rc::Rc,
-    task::{Context, Poll},
-};
+use std::{cell::RefCell, convert::TryInto, rc::Rc};
 
 use actix_web::{
-    dev::{Service, ServiceRequest, ServiceResponse, Transform},
+    dev::{self, Service, ServiceRequest, ServiceResponse, Transform},
     error::ErrorUnauthorized,
-    web::BytesMut,
-    Error, HttpMessage,
+    web::Bytes,
+    Error, FromRequest,
 };
-use futures::{future::LocalBoxFuture, stream::StreamExt, FutureExt};
+use futures::{future::LocalBoxFuture, FutureExt};
 
 use futures::future::{ready, Ready};
-use futures::Future;
 
 use ed25519_dalek::{PublicKey, Signature, Verifier};
-
-//use crate::hex;
-
-//use hex;
 
 pub struct VerifyEd25519Signature {
     public_key: Rc<PublicKey>,
@@ -64,26 +53,26 @@ where
 {
     type Response = ServiceResponse<Req>;
     type Error = Error;
-    #[allow(clippy::type_complexity)]
     type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
 
     actix_service::forward_ready!(service);
 
-    fn call(&self, mut req: ServiceRequest) -> Self::Future {
+    fn call(&self, req: ServiceRequest) -> Self::Future {
         // Clone the RC pointers so they can be moved into the async block
         let public_key = self.public_key.clone();
         let svc = self.service.clone();
 
         async move {
-            // Grab the body as some bytes
-            let mut body = BytesMut::new();
-            let mut stream = req.take_payload();
-            while let Some(chunk) = stream.next().await {
-                body.extend_from_slice(&chunk?);
-            }
+            let (hreq, mut payload) = req.into_parts();
+
+            let body = Bytes::from_request(&hreq, &mut payload).await;
+            let body = match body {
+                Ok(x) => x,
+                Err(e) => return Err(ErrorUnauthorized(format!("unable to get payload: {}", e))),
+            };
 
             // Grab the signature and timestamp from the headers and transform them to Option<&str>
-            let signature = req
+            let signature = hreq
                 .headers()
                 .get("X-Signature-Ed25519")
                 .and_then(|signature| signature.to_str().ok());
@@ -93,7 +82,7 @@ where
                 }
                 Some(s) => s,
             };
-            let timestamp = req
+            let timestamp = hreq
                 .headers()
                 .get("X-Signature-Timestamp")
                 .and_then(|timestamp| timestamp.to_str().ok());
@@ -105,17 +94,25 @@ where
             };
 
             // Create the message to validate by prepending the body with the signature timestamp
-            let message = body;
+            let message = &body;
 
             if verify(&message[..], timestamp, signature, public_key).is_err() {
                 return Err(ErrorUnauthorized("invalid signature"));
             }
+
+            let req = ServiceRequest::from_parts(hreq, payload_from_bytes(body));
 
             let res = svc.call(req).await?;
             Ok(res)
         }
         .boxed_local()
     }
+}
+
+fn payload_from_bytes(bytes: Bytes) -> dev::Payload {
+    let (_, mut h1_payload) = actix_http::h1::Payload::create(true);
+    h1_payload.unread_data(bytes);
+    dev::Payload::from(h1_payload)
 }
 
 fn verify(
