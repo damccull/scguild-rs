@@ -86,11 +86,11 @@ fn run(
             .service(
                 web::scope("/api")
                     .service(
-                        web::scope("/discord")
+                        web::resource("/discord")
                             .wrap(ed25519_signatures::VerifyEd25519Signature::new(
                                 discord_public_key,
                             ))
-                            .route("/", web::post().to(discord_api)),
+                            .route(web::post().to(discord_api)),
                     )
                     .route("/v1/{interaction}", web::get().to(api)),
             )
