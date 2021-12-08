@@ -15,7 +15,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Build the app
 COPY . .
 ENV SQLX_OFFLINE true
-RUN cargo build --release --bin zero2prod
+RUN cargo build --release --bin norseline
 
 
 FROM debian:bullseye-slim AS runtime
@@ -29,4 +29,4 @@ RUN apt-get update -y \
 COPY --from=builder /app/target/release/norseline norseline
 COPY configuration configuration
 ENV APP_ENVIRONMENT production
-ENTRYPOINT [ "./zero2prod" ]
+ENTRYPOINT [ "./norseline" ]
