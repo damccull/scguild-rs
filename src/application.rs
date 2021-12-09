@@ -56,6 +56,8 @@ impl Application {
         self.server.await
     }
     pub async fn register_commands_with_discord(&self) -> Result<(), anyhow::Error> {
+        // TODO: Use reqwest to get a Client Credentials grant to retrieve a discord token
+
         let token = std::env::var("DISCORD_TOKEN")?;
 
         let http = Arc::new(HttpClient::new(token.clone()));
