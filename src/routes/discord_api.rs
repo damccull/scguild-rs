@@ -7,7 +7,7 @@ use twilight_model::application::{
 
 use crate::error_chain_fmt;
 
-#[tracing::instrument(name = "calling discord api", skip(_req))]
+#[tracing::instrument(name = "calling discord api", skip(_req, interaction))]
 pub async fn discord_api(
     _req: HttpRequest,
     interaction: web::Json<Interaction>,
@@ -31,7 +31,7 @@ pub async fn discord_api(
     }
 }
 
-#[tracing::instrument(name = "application_command_handler")]
+#[tracing::instrument(name = "application_command_handler",skip(interaction))]
 async fn application_command_handler(
     interaction: Interaction,
 ) -> Result<InteractionResponse, DiscordApiError> {
@@ -47,20 +47,21 @@ async fn application_command_handler(
     }
 }
 
+#[tracing::instrument(name = "Discord Interaction - ABOUT")]
 async fn about(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError> {
     Ok(InteractionResponse::ChannelMessageWithSource(
         CallbackData {
             allowed_mentions: None,
             flags: None,
             tts: None,
-            content: Some(format!(
-                "Norseline Discord Bot v1. It is probably still lame.\nIncidentally, here's your interaction:\n{:?}",interaction
-            )),
+            content: Some("Norseline Discord Bot v1. It is probably still lame.".to_string()),
             embeds: Default::default(),
             components: Default::default(),
         },
     ))
 }
+
+#[tracing::instrument(name = "Discord Interaction - DEBUG")]
 async fn debug(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError> {
     Ok(InteractionResponse::ChannelMessageWithSource(
         CallbackData {
