@@ -13,4 +13,4 @@ email_client:
   authorization_token: "my-secret-token"
   timeout_milliseconds: 10000
 discord:
-  public_key: "public-key"
+  public_key: "0000000000000000000000000000000000000000000000000000000000000000"
