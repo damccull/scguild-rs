@@ -1,0 +1,13 @@
+application:
+  host: 127.0.0.1
+  base_url: "http://127.0.0.1"
+database:
+  require_ssl: false
+discord:
+  # My discord app
+  #public_key: "97c0eac82876c508e26959019fba50b5b80a7305ab148f9a4ef5a787005f5fab"
+
+  # This one is for testing with
+  # X-Signature-Ed25519: 172676b110ea0e14d6f41c50cf6b82dbf789cfeb5057eafc4ed58b2d49d98c75edd6964ba8ce8ab6d945581056b553a8f3dcef978a2bcfa8879ea7747384c10f
+  # X-Signature-Timestamp
+  public_key: "0363649faf7a83d0bc0d9faa9c6a5efa8adc772190b8072210bc825895ca3570"
