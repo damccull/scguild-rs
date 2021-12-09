@@ -11,7 +11,7 @@ async fn main() -> std::io::Result<()> {
     init_subscriber(subscriber);
 
     // Read the configuration, panicking if it can't be read
-    let configuration = get_configuration().expect("Failed to read the configuration.");
+    let configuration = get_configuration().expect("Failed to read the configuration");
 
     // Create the application and launch it
     let application = Application::build(configuration).await?;
