@@ -5,7 +5,6 @@ pub mod routes;
 pub mod serde_helpers;
 pub mod telemetry;
 
-
 pub fn error_chain_fmt(
     e: &impl std::error::Error,
     f: &mut std::fmt::Formatter<'_>,
