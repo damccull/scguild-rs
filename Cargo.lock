@@ -1417,6 +1417,7 @@ dependencies = [
  "tracing-log",
  "tracing-subscriber",
  "twilight-model",
+ "twilight-util",
  "uuid",
  "wiremock",
 ]
@@ -2697,6 +2698,15 @@ dependencies = [
  "serde_repr",
  "time 0.3.5",
  "tracing",
+]
+
+[[package]]
+name = "twilight-util"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9773d543e67b16d641a15ae4e2e0a6f4c2562a90dab9a3e46a3e4ac52b1b6f2"
+dependencies = [
+ "twilight-model",
 ]
 
 [[package]]

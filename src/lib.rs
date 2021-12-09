@@ -4,6 +4,7 @@ pub mod middleware;
 pub mod routes;
 pub mod serde_helpers;
 pub mod telemetry;
+pub mod discord_commands;
 
 pub fn error_chain_fmt(
     e: &impl std::error::Error,
