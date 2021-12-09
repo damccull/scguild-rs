@@ -1,10 +1,10 @@
-use std::num::{NonZeroU16, NonZeroU64};
+use std::num::NonZeroU64;
 
 use twilight_model::{
-    application::command::{ChoiceCommandOptionData, Command, CommandOption, CommandType},
+    application::command::{Command, CommandType},
     id::GuildId,
 };
-use twilight_util::builder::command::{BooleanBuilder, CommandBuilder, StringBuilder};
+use twilight_util::builder::command::CommandBuilder;
 
 pub fn commands() -> Vec<Command> {
     vec![CommandBuilder::new(
@@ -12,9 +12,6 @@ pub fn commands() -> Vec<Command> {
         "Get information about the application".into(),
         CommandType::ChatInput,
     )
-    .guild_id(GuildId {
-        0: NonZeroU64::new(751806938190446710).unwrap(),
-    })
     .build()]
 
     // [Command {

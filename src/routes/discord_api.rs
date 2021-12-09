@@ -37,6 +37,7 @@ async fn application_command_handler(
 ) -> Result<InteractionResponse, DiscordApiError> {
     match interaction {
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
+            "about" => about(interaction).await,
             "debug" => debug(interaction).await,
             _ => debug(interaction).await,
         },
@@ -46,6 +47,20 @@ async fn application_command_handler(
     }
 }
 
+async fn about(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError> {
+    Ok(InteractionResponse::ChannelMessageWithSource(
+        CallbackData {
+            allowed_mentions: None,
+            flags: None,
+            tts: None,
+            content: Some(format!(
+                "Norseline Discord Bot v1. It is probably still lame.\nIncidentally, here's your interaction:\n{:?}",interaction
+            )),
+            embeds: Default::default(),
+            components: Default::default(),
+        },
+    ))
+}
 async fn debug(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError> {
     Ok(InteractionResponse::ChannelMessageWithSource(
         CallbackData {
