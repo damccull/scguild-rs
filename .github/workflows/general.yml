@@ -42,36 +42,36 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Cache sqlx-cli
-        uses: actions/cache@v2
-        id: cache-sqlx
-        with:
-          path: |
-            ~/.cargo/bin/sqlx
-            ~/.cargo/bin/cargo-sqlx
-          key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
+      # - name: Cache sqlx-cli
+      #   uses: actions/cache@v2
+      #   id: cache-sqlx
+      #   with:
+      #     path: |
+      #       ~/.cargo/bin/sqlx
+      #       ~/.cargo/bin/cargo-sqlx
+      #     key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
 
-      - name: Install sqlx-cli
-        uses: actions-rs/cargo@v1
-        if: steps.cache-sqlx.outputs.cache-hit == false
-        with:
-          command: install
-          args: >
-            sqlx-cli
-            --force
-            --version=${{ env.SQLX_VERSION }}
-            --features=${{ env.SQLX_FEATURES }}
-            --no-default-features
-            --locked
+      # - name: Install sqlx-cli
+      #   uses: actions-rs/cargo@v1
+      #   if: steps.cache-sqlx.outputs.cache-hit == false
+      #   with:
+      #     command: install
+      #     args: >
+      #       sqlx-cli
+      #       --force
+      #       --version=${{ env.SQLX_VERSION }}
+      #       --features=${{ env.SQLX_FEATURES }}
+      #       --no-default-features
+      #       --locked
 
-      - name: Migrate database
-        run: |
-          sudo apt-get install libpq-dev -y
-          chmod +x ./scripts/init_db.sh
-          SKIP_DOCKER=true ./scripts/init_db.sh
+      # - name: Migrate database
+      #   run: |
+      #     sudo apt-get install libpq-dev -y
+      #     chmod +x ./scripts/init_db.sh
+      #     SKIP_DOCKER=true ./scripts/init_db.sh
 
-      - name: Check sqlx metadata file
-        run: cargo sqlx prepare --check -- --lib
+      # - name: Check sqlx metadata file
+      #   run: cargo sqlx prepare --check -- --lib
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
@@ -129,31 +129,31 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Cache sqlx-cli
-        uses: actions/cache@v2
-        id: cache-sqlx
-        with:
-          path: |
-            ~/.cargo/bin/sqlx
-          key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
+      # - name: Cache sqlx-cli
+      #   uses: actions/cache@v2
+      #   id: cache-sqlx
+      #   with:
+      #     path: |
+      #       ~/.cargo/bin/sqlx
+      #     key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
 
-      - name: Install sqlx-cli
-        uses: actions-rs/cargo@v1
-        if: steps.cache-sqlx.outputs.cache-hit == false
-        with:
-          command: install
-          args: >
-            sqlx-cli
-            --force
-            --version=${{ env.SQLX_VERSION }}
-            --features=${{ env.SQLX_FEATURES }}
-            --no-default-features
-            --locked
-      - name: Migrate database
-        run: |
-          sudo apt-get install libpq-dev -y
-          chmod +x ./scripts/init_db.sh
-          SKIP_DOCKER=true ./scripts/init_db.sh
+      # - name: Install sqlx-cli
+      #   uses: actions-rs/cargo@v1
+      #   if: steps.cache-sqlx.outputs.cache-hit == false
+      #   with:
+      #     command: install
+      #     args: >
+      #       sqlx-cli
+      #       --force
+      #       --version=${{ env.SQLX_VERSION }}
+      #       --features=${{ env.SQLX_FEATURES }}
+      #       --no-default-features
+      #       --locked
+      # - name: Migrate database
+      #   run: |
+      #     sudo apt-get install libpq-dev -y
+      #     chmod +x ./scripts/init_db.sh
+      #     SKIP_DOCKER=true ./scripts/init_db.sh
 
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
@@ -196,34 +196,34 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Cache sqlx-cli
-        uses: actions/cache@v2
-        id: cache-sqlx
-        with:
-          path: |
-            ~/.cargo/bin/sqlx
-          key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
+      # - name: Cache sqlx-cli
+      #   uses: actions/cache@v2
+      #   id: cache-sqlx
+      #   with:
+      #     path: |
+      #       ~/.cargo/bin/sqlx
+      #     key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
 
-      - name: Install sqlx-cli
-        uses: actions-rs/cargo@v1
-        if: steps.cache-sqlx.outputs.cache-hit == false
-        with:
-          command: install
-          args: >
-            sqlx-cli
-            --force
-            --version=${{ env.SQLX_VERSION }}
-            --features=${{ env.SQLX_FEATURES }}
-            --no-default-features
-            --locked
+      # - name: Install sqlx-cli
+      #   uses: actions-rs/cargo@v1
+      #   if: steps.cache-sqlx.outputs.cache-hit == false
+      #   with:
+      #     command: install
+      #     args: >
+      #       sqlx-cli
+      #       --force
+      #       --version=${{ env.SQLX_VERSION }}
+      #       --features=${{ env.SQLX_FEATURES }}
+      #       --no-default-features
+      #       --locked
 
-      - name: Migrate database
-        run: |
-          sudo apt-get install libpq-dev -y
-          chmod +x ./scripts/init_db.sh
-          SKIP_DOCKER=true ./scripts/init_db.sh
+      # - name: Migrate database
+      #   run: |
+      #     sudo apt-get install libpq-dev -y
+      #     chmod +x ./scripts/init_db.sh
+      #     SKIP_DOCKER=true ./scripts/init_db.sh
 
-      - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          args: "--ignore-tests --avoid-cfg-tarpaulin"
+      # - name: Run cargo-tarpaulin
+      #   uses: actions-rs/tarpaulin@v0.1
+      #   with:
+      #     args: "--ignore-tests --avoid-cfg-tarpaulin"
