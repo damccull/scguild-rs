@@ -1,4 +1,4 @@
-use std::net::TcpListener;
+use std::{net::TcpListener, sync::Arc};
 
 use actix_cors::Cors;
 use actix_web::{
@@ -10,11 +10,13 @@ use sqlx::{postgres::PgPoolOptions, PgPool};
 use tracing_actix_web::TracingLogger;
 
 use ed25519_dalek::PublicKey;
+use twilight_http::Client as HttpClient;
+use twilight_model::id::GuildId;
 
 use crate::{
     configuration::{DatabaseSettings, Settings},
     middleware::ed25519_signatures,
-    routes::{api, discord_api, health_check},
+    routes::{api, discord_api, health_check}, discord_commands::{commands, self},
 };
 
 pub struct Application {
@@ -52,6 +54,31 @@ impl Application {
     }
     pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
         self.server.await
+    }
+    pub async fn register_commands_with_discord(&self) -> Result<(), anyhow::Error> {
+        let token = std::env::var("DISCORD_TOKEN")?;
+
+        let http = Arc::new(HttpClient::new(token.clone()));
+
+        let current_user = http.current_user_application().exec().await?.model().await?;
+        http.set_application_id(current_user.id.0.into());
+
+        // http.set_global_commands(&discord_commands::commands())?
+        //     .exec()
+        //     .await?;
+        http.set_guild_commands(
+            GuildId::new(745809834183753828).unwrap(),
+            &discord_commands::commands(),
+        )?
+        .exec()
+        .await?;
+
+        // REMOVE COMMANDS
+        // http.set_global_commands(&[])?.exec().await?;
+        // http.set_guild_commands(GuildId::new(745809834183753828).unwrap(), &[])?
+        //     .exec()
+        //     .await?;
+        Ok(())
     }
 }
 

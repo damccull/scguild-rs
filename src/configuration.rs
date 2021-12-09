@@ -5,7 +5,10 @@
 //! category and don't warrant an entirely new subcategory.
 
 use ed25519_dalek::PublicKey;
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    num::NonZeroU64,
+};
 
 use serde_aux::field_attributes::deserialize_number_from_string;
 use sqlx::{
@@ -111,6 +114,8 @@ pub struct ApplicationSettings {
 pub struct DiscordSettings {
     #[serde(deserialize_with = "deserialize_discord_public_key_from_string")]
     pub public_key: PublicKey,
+    pub discord_token: String,
+    pub guild_id: NonZeroU64,
 }
 
 /// Represents the environment in which the server is running.
