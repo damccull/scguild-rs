@@ -1,6 +1,6 @@
 pub mod application;
 pub mod configuration;
-pub mod discord_commands;
+pub mod discord;
 pub mod middleware;
 pub mod serde_helpers;
 pub mod telemetry;

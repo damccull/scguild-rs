@@ -16,7 +16,7 @@ use twilight_model::id::GuildId;
 use crate::{
     configuration::{DatabaseSettings, Settings},
     middleware::ed25519_signatures,
-    routes::{api, discord_api, health_check}, discord_commands::{commands, self},
+    webapp::{api, discord_api, health_check}, discord,
 };
 
 pub struct Application {
@@ -70,7 +70,7 @@ impl Application {
         //     .await?;
         http.set_guild_commands(
             GuildId::new(745809834183753828).unwrap(),
-            &discord_commands::commands(),
+            &discord::commands(),
         )?
         .exec()
         .await?;
