@@ -1,4 +1,3 @@
-use anyhow::Result;
 use async_trait::async_trait;
 use twilight_model::application::{command::Command, interaction::ApplicationCommand};
 
@@ -36,6 +35,7 @@ impl DiscordCommand {
             // Ships::NAME => Some(Self::Ships(Ships(cmd))),
             // AddShip::NAME => Some(Self::AddShip(AddShip(cmd))),
             // RemoveShip::NAME => Some(Self::RemoveShip(RemoveShip(cmd))),
+            _ => None,
         }
     }
 }
