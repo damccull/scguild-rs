@@ -1,8 +1,6 @@
 use async_trait::async_trait;
 use twilight_model::application::{
-    callback::InteractionResponse,
-    command::Command,
-    interaction::{ApplicationCommand, Interaction},
+    callback::InteractionResponse, command::Command, interaction::Interaction,
 };
 
 use self::{

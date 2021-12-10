@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
-    command::{ChoiceCommandOptionData, Command, CommandType},
-    interaction::{self, ApplicationCommand, Interaction},
+    command::{Command, CommandType},
+    interaction::ApplicationCommand,
 };
 use twilight_util::builder::command::{CommandBuilder, SubCommandBuilder, SubCommandGroupBuilder};
 

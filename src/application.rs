@@ -68,7 +68,7 @@ impl Application {
     pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
         self.server.await
     }
-    #[tracing::instrument(name="Registering commands with discord", skip(self))]
+    #[tracing::instrument(name = "Registering commands with discord", skip(self))]
     pub async fn register_commands_with_discord(&self) -> Result<(), anyhow::Error> {
         #[derive(Debug, Deserialize)]
         struct ClientCredential {
@@ -81,7 +81,7 @@ impl Application {
         let reqwestclient = reqwest::Client::new();
 
         tracing::info!("Getting client credential.");
-        
+
         let params = [
             ("grant_type", "client_credentials"),
             (
@@ -111,8 +111,8 @@ impl Application {
             .await
             .context("Error deserializing client credential")?;
 
-            tracing::info!("Client credential is valid.");
-            tracing::info!("Setting application commands with discord API.");
+        tracing::info!("Client credential is valid.");
+        tracing::info!("Setting application commands with discord API.");
 
         let http = Arc::new(HttpClient::new(format!(
             "Bearer {}",
