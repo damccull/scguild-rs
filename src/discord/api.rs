@@ -9,7 +9,7 @@ use crate::error_chain_fmt;
 
 use super::{commands::About, SlashCommand};
 
-#[tracing::instrument(name = "calling discord api", skip(_req, interaction))]
+#[tracing::instrument(name = "Calling Discord API", skip(_req, interaction))]
 pub async fn discord_api(
     _req: HttpRequest,
     interaction: web::Json<Interaction>,
@@ -33,7 +33,7 @@ pub async fn discord_api(
     }
 }
 
-#[tracing::instrument(name = "application_command_handler", skip(interaction))]
+#[tracing::instrument(name = "Handling ApplicationCommand", skip(interaction))]
 async fn application_command_handler(
     interaction: Interaction,
 ) -> Result<InteractionResponse, DiscordApiError> {
