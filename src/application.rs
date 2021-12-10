@@ -62,7 +62,12 @@ impl Application {
 
         let http = Arc::new(HttpClient::new(token.clone()));
 
-        let current_user = http.current_user_application().exec().await?.model().await?;
+        let current_user = http
+            .current_user_application()
+            .exec()
+            .await?
+            .model()
+            .await?;
         http.set_application_id(current_user.id.0.into());
 
         // http.set_global_commands(&discord_commands::commands())?
