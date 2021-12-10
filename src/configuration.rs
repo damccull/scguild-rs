@@ -112,10 +112,12 @@ pub struct ApplicationSettings {
 
 #[derive(Clone, serde::Deserialize)]
 pub struct DiscordSettings {
+    pub application_id: u64,
     #[serde(deserialize_with = "deserialize_discord_public_key_from_string")]
     pub public_key: PublicKey,
-    pub discord_token: String,
-    pub guild_id: NonZeroU64,
+    pub client_id: u64,
+    pub client_secret: String,
+    pub guild_id: u64,
 }
 
 /// Represents the environment in which the server is running.

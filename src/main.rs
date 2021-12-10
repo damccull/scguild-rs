@@ -15,6 +15,10 @@ async fn main() -> std::io::Result<()> {
 
     // Create the application and launch it
     let application = Application::build(configuration).await?;
+    match application.register_commands_with_discord().await {
+        Ok(x) => x,
+        Err(e) => panic!("Unable to register commands: {:?}", e),
+    };
     application.run_until_stopped().await?;
     Ok(())
 }

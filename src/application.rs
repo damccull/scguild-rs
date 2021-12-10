@@ -3,18 +3,22 @@ use std::{net::TcpListener, sync::Arc};
 use actix_cors::Cors;
 use actix_web::{
     dev::Server,
+    http::header::ContentType,
     web::{self, Data},
     App, HttpServer,
 };
+use anyhow::Context;
+use reqwest::header;
+use serde::Deserialize;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use tracing_actix_web::TracingLogger;
 
 use ed25519_dalek::PublicKey;
 use twilight_http::Client as HttpClient;
-use twilight_model::id::GuildId;
+use twilight_model::id::{ApplicationId, GuildId};
 
 use crate::{
-    configuration::{DatabaseSettings, Settings},
+    configuration::{DatabaseSettings, DiscordSettings, Settings},
     discord::{self, api::discord_api},
     middleware::ed25519_signatures,
     webapp::{api, health_check},
@@ -23,6 +27,7 @@ use crate::{
 pub struct Application {
     port: u16,
     server: Server,
+    discord_settings: DiscordSettings,
 }
 impl Application {
     pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
@@ -41,6 +46,9 @@ impl Application {
         // Store the listener's actual port for future use
         let port = listener.local_addr().unwrap().port();
 
+        // Store the discord settings in the app for future use
+        let discord_settings = configuration.discord.clone();
+
         let server = run(
             listener,
             connection_pool,
@@ -48,7 +56,11 @@ impl Application {
             configuration.discord.public_key,
         )?;
 
-        Ok(Self { port, server })
+        Ok(Self {
+            port,
+            server,
+            discord_settings,
+        })
     }
     pub fn port(&self) -> u16 {
         self.port
@@ -57,29 +69,72 @@ impl Application {
         self.server.await
     }
     pub async fn register_commands_with_discord(&self) -> Result<(), anyhow::Error> {
-        // TODO: Use reqwest to get a Client Credentials grant to retrieve a discord token
+        #[derive(Debug, Deserialize)]
+        struct ClientCredential {
+            #[serde(rename = "access_token")]
+            pub access_token: String,
+            pub expires_in: u64,
+            pub scope: String,
+            pub token_type: String,
+        }
+        // TODO: Use reqwest to get a Client Credentials grant to retrieve a discord token applications.commands.update
+        let reqwestclient = reqwest::Client::new();
 
-        let token = std::env::var("DISCORD_TOKEN")?;
+        let params = [
+            ("grant_type", "client_credentials"),
+            (
+                "scope",
+                "applications.commands applications.commands.update",
+            ),
+        ];
+        let client_credential = reqwestclient
+            .post("https://discord.com/api/oauth2/token")
+            .header(
+                header::CONTENT_TYPE,
+                mime::APPLICATION_WWW_FORM_URLENCODED.to_string(),
+            )
+            .basic_auth(
+                &self.discord_settings.client_id,
+                Some(&self.discord_settings.client_secret),
+            )
+            .form(&params)
+            .send()
+            .await
+            .context("Error requesting client credential from Discord API")?;
 
-        let http = Arc::new(HttpClient::new(token.clone()));
+        let client_credential = client_credential
+            .json::<ClientCredential>()
+            .await
+            .context("Error deserializing client credential")?;
+        dbg!(&client_credential);
 
-        let current_user = http
-            .current_user_application()
-            .exec()
-            .await?
-            .model()
-            .await?;
-        http.set_application_id(current_user.id.0.into());
+        let http = Arc::new(HttpClient::new(format!(
+            "Bearer {}",
+            client_credential.access_token
+        )));
 
-        // http.set_global_commands(&discord_commands::commands())?
+        // let current_user = http
+        //     .current_user_application()
         //     .exec()
+        //     .await?
+        //     .model()
         //     .await?;
-        http.set_guild_commands(
-            GuildId::new(745809834183753828).unwrap(),
-            &discord::commands(),
-        )?
-        .exec()
-        .await?;
+        // http.set_application_id(current_user.id.0.into());
+        http.set_application_id(ApplicationId::new(self.discord_settings.application_id).unwrap());
+
+        dbg!(&http, &self.discord_settings.guild_id);
+
+        // // http.set_global_commands(&discord_commands::commands())?
+        // //     .exec()
+        // //     .await?;
+        let x = http
+            .set_guild_commands(
+                GuildId::new(self.discord_settings.guild_id).unwrap(),
+                &discord::commands(),
+            )?
+            .exec()
+            .await;
+        dbg!(x);
 
         // REMOVE COMMANDS
         // http.set_global_commands(&[])?.exec().await?;
