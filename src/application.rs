@@ -77,7 +77,6 @@ impl Application {
             pub scope: String,
             pub token_type: String,
         }
-        // TODO: Use reqwest to get a Client Credentials grant to retrieve a discord token applications.commands.update
         let reqwestclient = reqwest::Client::new();
 
         let params = [
@@ -106,35 +105,23 @@ impl Application {
             .json::<ClientCredential>()
             .await
             .context("Error deserializing client credential")?;
-        dbg!(&client_credential);
 
         let http = Arc::new(HttpClient::new(format!(
             "Bearer {}",
             client_credential.access_token
         )));
 
-        // let current_user = http
-        //     .current_user_application()
-        //     .exec()
-        //     .await?
-        //     .model()
-        //     .await?;
-        // http.set_application_id(current_user.id.0.into());
         http.set_application_id(ApplicationId::new(self.discord_settings.application_id).unwrap());
-
-        dbg!(&http, &self.discord_settings.guild_id);
 
         // // http.set_global_commands(&discord_commands::commands())?
         // //     .exec()
         // //     .await?;
-        let x = http
-            .set_guild_commands(
-                GuildId::new(self.discord_settings.guild_id).unwrap(),
-                &discord::commands(),
-            )?
-            .exec()
-            .await;
-        dbg!(x);
+        http.set_guild_commands(
+            GuildId::new(self.discord_settings.guild_id).unwrap(),
+            &discord::commands(),
+        )?
+        .exec()
+        .await?;
 
         // REMOVE COMMANDS
         // http.set_global_commands(&[])?.exec().await?;
