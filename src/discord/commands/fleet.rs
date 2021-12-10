@@ -4,7 +4,9 @@ use twilight_model::application::{
     command::{Command, CommandType},
     interaction::ApplicationCommand,
 };
-use twilight_util::builder::command::{CommandBuilder, SubCommandBuilder, SubCommandGroupBuilder};
+use twilight_util::builder::command::{
+    CommandBuilder, StringBuilder, SubCommandBuilder, SubCommandGroupBuilder,
+};
 
 use crate::discord::{api::DiscordApiError, SlashCommand};
 
@@ -31,7 +33,15 @@ impl SlashCommand for Fleet {
                         "show".into(),
                         "Show the whole channel the ships in your fleet.".into(),
                     ),
-                    SubCommandBuilder::new("add".into(), "Add a new ship to your fleet.".into()),
+                    SubCommandBuilder::new("add".into(), "Add a new ship to your fleet.".into())
+                        .option(StringBuilder::new(
+                            "name".into(),
+                            "What you want your ship to be named.".into(),
+                        ))
+                        .option(StringBuilder::new(
+                            "description".into(),
+                            "Describe your ship".into(),
+                        )),
                     SubCommandBuilder::new(
                         "remove".into(),
                         "Remove a ship from your fleet.".into(),

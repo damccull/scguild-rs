@@ -54,7 +54,7 @@ async fn application_command_handler(
 
 #[tracing::instrument(name = "Discord Interaction - FLEET")]
 async fn test_command(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
-    let x = &cmd.data.options;
+    let x = cmd.data.options.get(0);
     dbg!(&x);
     //TODO: Figure out how to match against a subcommand or user input
     Ok(InteractionResponse::ChannelMessageWithSource(
