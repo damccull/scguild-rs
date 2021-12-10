@@ -5,7 +5,10 @@ use twilight_model::application::{
     interaction::{ApplicationCommand, Interaction},
 };
 
-use self::{api::DiscordApiError, commands::About};
+use self::{
+    api::DiscordApiError,
+    commands::{About, Fleet},
+};
 
 pub mod api;
 mod commands;
@@ -21,48 +24,14 @@ trait SlashCommand {
     fn define() -> Command;
 
     async fn api_handler(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError>;
-
-    // /// Run the command, self should be an [`ApplicationCommand`].
-    // async fn run(self) -> Result<()>;
 }
 
-pub enum DiscordCommand {
-    About(About),
-    // Fleet(Fleet),
-    // Ships(Ships),
-    // AddShip(AddShip),
-    // RemoveShip(RemoveShip),
-}
-impl DiscordCommand {
-    pub fn get(cmd: ApplicationCommand) -> Option<Self> {
-        match cmd.data.name.as_str() {
-            About::NAME => Some(Self::About(About(cmd))),
-            // Fleet::NAME => Some(Self::Fleet(Fleet(cmd))),
-            // Ships::NAME => Some(Self::Ships(Ships(cmd))),
-            // AddShip::NAME => Some(Self::AddShip(AddShip(cmd))),
-            // RemoveShip::NAME => Some(Self::RemoveShip(RemoveShip(cmd))),
-            _ => None,
-        }
-    }
-}
-
-pub fn commands() -> [Command; 1] {
-    [
+pub fn commands() -> Vec<Command> {
+    vec![
         About::define(),
-        // Fleet::define(),
+        Fleet::define(),
         // Ships::define(),
         // AddShip::define,
         // RemoveShip::define(),
     ]
-
-    // [Command {
-    //     id: None,
-    //     guild_id: None,
-    //     application_id: None,
-    //     name: "about".to_string(),
-    //     description: "Gets information about the application.".to_string(),
-    //     options: vec![],
-    //     kind: CommandType::ChatInput,
-    //     default_permission: None,
-    // }]
 }

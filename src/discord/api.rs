@@ -1,9 +1,6 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use twilight_model::application::{
-    callback::{CallbackData, InteractionResponse},
-    interaction::Interaction,
-};
+use twilight_model::application::{callback::InteractionResponse, interaction::Interaction};
 
 use crate::error_chain_fmt;
 
@@ -44,8 +41,7 @@ async fn application_command_handler(
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
             About::NAME => About::api_handler(interaction).await,
             Fleet::NAME => Fleet::api_handler(interaction).await,
-            "debug" => debug(interaction).await,
-            _ => debug(interaction).await,
+            _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
         },
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
             "Invalid interaction data".to_string()
@@ -53,22 +49,10 @@ async fn application_command_handler(
     }
 }
 
-#[tracing::instrument(name = "Discord Interaction - DEBUG")]
-async fn debug(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError> {
-    Ok(InteractionResponse::ChannelMessageWithSource(
-        CallbackData {
-            allowed_mentions: None,
-            flags: None,
-            tts: None,
-            content: Some(format!("```rust\n{:?}\n```", interaction)),
-            embeds: Default::default(),
-            components: Default::default(),
-        },
-    ))
-}
-
 #[derive(thiserror::Error)]
 pub enum DiscordApiError {
+    #[error("Unsupported interaction {0:?}")]
+    UnsupportedInteraction(Interaction),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -80,6 +64,7 @@ impl std::fmt::Debug for DiscordApiError {
 impl ResponseError for DiscordApiError {
     fn status_code(&self) -> actix_http::StatusCode {
         match self {
+            DiscordApiError::UnsupportedInteraction(_) => actix_http::StatusCode::BAD_REQUEST,
             DiscordApiError::UnexpectedError(_) => actix_http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
