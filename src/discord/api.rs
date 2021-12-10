@@ -7,7 +7,10 @@ use twilight_model::application::{
 
 use crate::error_chain_fmt;
 
-use super::{commands::About, SlashCommand};
+use super::{
+    commands::{About, Fleet},
+    SlashCommand,
+};
 
 #[tracing::instrument(name = "Calling Discord API", skip(_req, interaction))]
 pub async fn discord_api(
@@ -39,7 +42,8 @@ async fn application_command_handler(
 ) -> Result<InteractionResponse, DiscordApiError> {
     match interaction {
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
-            About::NAME => About::about(interaction).await,
+            About::NAME => About::api_handler(interaction).await,
+            Fleet::NAME => Fleet::api_handler(interaction).await,
             "debug" => debug(interaction).await,
             _ => debug(interaction).await,
         },

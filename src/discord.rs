@@ -1,7 +1,11 @@
 use async_trait::async_trait;
-use twilight_model::application::{command::Command, interaction::ApplicationCommand};
+use twilight_model::application::{
+    callback::InteractionResponse,
+    command::Command,
+    interaction::{ApplicationCommand, Interaction},
+};
 
-use self::commands::About;
+use self::{api::DiscordApiError, commands::About};
 
 pub mod api;
 mod commands;
@@ -15,6 +19,8 @@ trait SlashCommand {
 
     /// Command definition
     fn define() -> Command;
+
+    async fn api_handler(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError>;
 
     // /// Run the command, self should be an [`ApplicationCommand`].
     // async fn run(self) -> Result<()>;
