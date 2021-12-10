@@ -68,6 +68,7 @@ impl Application {
     pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
         self.server.await
     }
+    #[tracing::instrument(name="Registering commands with discord", skip(self))]
     pub async fn register_commands_with_discord(&self) -> Result<(), anyhow::Error> {
         #[derive(Debug, Deserialize)]
         struct ClientCredential {
@@ -79,6 +80,8 @@ impl Application {
         }
         let reqwestclient = reqwest::Client::new();
 
+        tracing::info!("Getting client credential.");
+        
         let params = [
             ("grant_type", "client_credentials"),
             (
@@ -101,10 +104,15 @@ impl Application {
             .await
             .context("Error requesting client credential from Discord API")?;
 
+        tracing::info!("Deserializing client credential.");
+
         let client_credential = client_credential
             .json::<ClientCredential>()
             .await
             .context("Error deserializing client credential")?;
+
+            tracing::info!("Client credential is valid.");
+            tracing::info!("Setting application commands with discord API.");
 
         let http = Arc::new(HttpClient::new(format!(
             "Bearer {}",
@@ -116,12 +124,14 @@ impl Application {
         // // http.set_global_commands(&discord_commands::commands())?
         // //     .exec()
         // //     .await?;
+        tracing::info!("Setting guild commands.");
         http.set_guild_commands(
             GuildId::new(self.discord_settings.guild_id).unwrap(),
             &discord::commands(),
         )?
         .exec()
         .await?;
+        tracing::info!("Guild commands set.");
 
         // REMOVE COMMANDS
         // http.set_global_commands(&[])?.exec().await?;
