@@ -4,7 +4,6 @@ application:
 database:
   require_ssl: false
 discord:
-  discord_token: f
   guild_id: 751806938190446710
   # My discord app
   #public_key: "97c0eac82876c508e26959019fba50b5b80a7305ab148f9a4ef5a787005f5fab"
