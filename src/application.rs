@@ -15,8 +15,9 @@ use twilight_model::id::GuildId;
 
 use crate::{
     configuration::{DatabaseSettings, Settings},
+    discord::{self, api::discord_api},
     middleware::ed25519_signatures,
-    webapp::{api, discord_api, health_check}, discord,
+    webapp::{api, health_check},
 };
 
 pub struct Application {
