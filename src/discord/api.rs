@@ -1,6 +1,9 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use twilight_model::application::{callback::InteractionResponse, interaction::Interaction};
+use twilight_model::application::{
+    callback::{CallbackData, InteractionResponse},
+    interaction::{ApplicationCommand, Interaction},
+};
 
 use crate::error_chain_fmt;
 
@@ -40,13 +43,32 @@ async fn application_command_handler(
     match interaction {
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
             About::NAME => About::api_handler(interaction).await,
-            Fleet::NAME => Fleet::api_handler(interaction).await,
+            Fleet::NAME => test_command(cmd).await,
             _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
         },
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
             "Invalid interaction data".to_string()
         ))),
     }
+}
+
+#[tracing::instrument(name = "Discord Interaction - FLEET")]
+async fn test_command(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    let x = &cmd.data.options;
+    dbg!(&x);
+    //TODO: Figure out how to match against a subcommand or user input
+    Ok(InteractionResponse::ChannelMessageWithSource(
+        CallbackData {
+            allowed_mentions: None,
+            flags: None,
+            tts: None,
+            content: Some(
+                "This command will show fleet info and allow you to manage it.".to_string(),
+            ),
+            embeds: Default::default(),
+            components: Default::default(),
+        },
+    ))
 }
 
 #[derive(thiserror::Error)]
