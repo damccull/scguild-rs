@@ -2,7 +2,7 @@ use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
-    interaction::{ApplicationCommand, Interaction},
+    interaction::{application_command::CommandOptionValue, ApplicationCommand, Interaction},
 };
 
 use crate::error_chain_fmt;
@@ -56,9 +56,18 @@ async fn application_command_handler(
 async fn test_command(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
     let result: String = match cmd.data.options.get(0) {
         Some(subcommand) => match subcommand.name.as_str() {
-            "add" => "You would have just added a ship.".into(),
-            "remove" => "you would have just removed a ship.".into(),
-            _ => "no subcommand".into(),
+            "hangar" => {
+                if let CommandOptionValue::SubCommandGroup(cmd) = &subcommand.value {
+                    match cmd[0].name.as_str() {
+                        "add" => "You would have just added a ship.".into(),
+                        "remove" => "you would have just removed a ship.".into(),
+                        _ => "No such command.".into(),
+                    }
+                } else {
+                    "Nope".into()
+                }
+            }
+            _ => "No such command.".into(),
         },
         None => {
             return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
