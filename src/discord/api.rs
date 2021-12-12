@@ -54,17 +54,27 @@ async fn application_command_handler(
 
 #[tracing::instrument(name = "Discord Interaction - FLEET")]
 async fn test_command(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
-    let x = cmd.data.options.get(0);
-    dbg!(&x);
+    let result: String = match cmd.data.options.get(0) {
+        Some(subcommand) => match subcommand.name.as_str() {
+            "add" => "You would have just added a ship.".into(),
+            "remove" => "you would have just removed a ship.".into(),
+            _ => "no subcommand".into(),
+        },
+        None => {
+            return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                "Command data was empty."
+            )));
+        }
+    };
+
+    dbg!(&cmd.data, &cmd.data.options.get(0).unwrap().name.as_str());
     //TODO: Figure out how to match against a subcommand or user input
     Ok(InteractionResponse::ChannelMessageWithSource(
         CallbackData {
             allowed_mentions: None,
             flags: None,
             tts: None,
-            content: Some(
-                "This command will show fleet info and allow you to manage it.".to_string(),
-            ),
+            content: Some(result),
             embeds: Default::default(),
             components: Default::default(),
         },
