@@ -81,7 +81,7 @@ impl SlashCommand for Fleet {
     async fn api_handler(
         cmd: twilight_model::application::interaction::Interaction,
     ) -> Result<InteractionResponse, DiscordApiError> {
-        let x = cmd;
+        let _x = cmd;
         Ok(InteractionResponse::ChannelMessageWithSource(
             CallbackData {
                 allowed_mentions: None,
