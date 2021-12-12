@@ -1,14 +1,11 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use twilight_model::application::{
-    callback::{CallbackData, InteractionResponse},
-    interaction::{application_command::CommandOptionValue, ApplicationCommand, Interaction},
-};
+use twilight_model::application::{callback::InteractionResponse, interaction::Interaction};
 
 use crate::error_chain_fmt;
 
 use super::{
-    commands::{About, Fleet},
+    commands::{About, Fleet, Wishlist},
     SlashCommand,
 };
 
@@ -42,52 +39,15 @@ async fn application_command_handler(
 ) -> Result<InteractionResponse, DiscordApiError> {
     match interaction {
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
-            About::NAME => About::api_handler(interaction).await,
-            Fleet::NAME => test_command(cmd).await,
+            About::NAME => About::api_handler(cmd).await,
+            Fleet::NAME => Fleet::api_handler(cmd).await,
+            Wishlist::NAME => Wishlist::api_handler(cmd).await,
             _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
         },
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
             "Invalid interaction data".to_string()
         ))),
     }
-}
-
-#[tracing::instrument(name = "Discord Interaction - FLEET")]
-async fn test_command(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
-    let result: String = match cmd.data.options.get(0) {
-        Some(subcommand) => match subcommand.name.as_str() {
-            "hangar" => {
-                if let CommandOptionValue::SubCommandGroup(cmd) = &subcommand.value {
-                    match cmd[0].name.as_str() {
-                        "add" => "You would have just added a ship.".into(),
-                        "remove" => "you would have just removed a ship.".into(),
-                        _ => "No such command.".into(),
-                    }
-                } else {
-                    "Nope".into()
-                }
-            }
-            _ => "No such command.".into(),
-        },
-        None => {
-            return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
-                "Command data was empty."
-            )));
-        }
-    };
-
-    dbg!(&cmd.data, &cmd.data.options.get(0).unwrap().name.as_str());
-    //TODO: Figure out how to match against a subcommand or user input
-    Ok(InteractionResponse::ChannelMessageWithSource(
-        CallbackData {
-            allowed_mentions: None,
-            flags: None,
-            tts: None,
-            content: Some(result),
-            embeds: Default::default(),
-            components: Default::default(),
-        },
-    ))
 }
 
 #[derive(thiserror::Error)]

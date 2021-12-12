@@ -22,74 +22,63 @@ impl SlashCommand for Fleet {
             "Displays and manages a player's fleet.".into(),
             CommandType::ChatInput,
         )
+        .option(SubCommandBuilder::new("test".into(), "test".into()))
+        .option(SubCommandBuilder::new(
+            "list".into(),
+            "List all the ships in your (or someone else's) fleet privately.".into(),
+        ))
+        .option(SubCommandBuilder::new(
+            "show".into(),
+            "Show the whole channel the ships in your fleet.".into(),
+        ))
         .option(
-            SubCommandGroupBuilder::new("hangar".into(), "Manage ships in your fleet".into())
-                .subcommands([
-                    SubCommandBuilder::new(
-                        "list".into(),
-                        "List all the ships in your (or someone else's) fleet privately.".into(),
-                    ),
-                    SubCommandBuilder::new(
-                        "show".into(),
-                        "Show the whole channel the ships in your fleet.".into(),
-                    ),
-                    SubCommandBuilder::new("add".into(), "Add a new ship to your fleet.".into())
-                        .option(StringBuilder::new(
-                            "name".into(),
-                            "What you want your ship to be named.".into(),
-                        ))
-                        .option(StringBuilder::new(
-                            "description".into(),
-                            "Describe your ship".into(),
-                        )),
-                    SubCommandBuilder::new(
-                        "remove".into(),
-                        "Remove a ship from your fleet.".into(),
-                    ),
-                    SubCommandBuilder::new(
-                        "rename".into(),
-                        "Remove a ship from your fleet.".into(),
-                    ),
-                ]),
+            SubCommandBuilder::new("add".into(), "Add a new ship to your fleet.".into())
+                .option(
+                    StringBuilder::new(
+                        "name".into(),
+                        "What you want your ship to be named.".into(),
+                    )
+                    .required(true),
+                )
+                .option(StringBuilder::new(
+                    "description".into(),
+                    "Describe your ship".into(),
+                )),
         )
-        .option(
-            SubCommandGroupBuilder::new("wishlist".into(), "Manage ships in your wishlist".into())
-                .subcommands([
-                    SubCommandBuilder::new(
-                        "list".into(),
-                        "List all the ships in your (or someone else's) wishlist privately.".into(),
-                    ),
-                    SubCommandBuilder::new(
-                        "show".into(),
-                        "Show the whole channel the ships in your wishlist.".into(),
-                    ),
-                    SubCommandBuilder::new("add".into(), "Add a new ship to your wishlist.".into()),
-                    SubCommandBuilder::new(
-                        "remove".into(),
-                        "Remove a ship from your wishlist.".into(),
-                    ),
-                    SubCommandBuilder::new(
-                        "rename".into(),
-                        "Remove a ship from your wishlist.".into(),
-                    ),
-                ]),
-        )
+        .option(SubCommandBuilder::new(
+            "remove".into(),
+            "Remove a ship from your fleet.".into(),
+        ))
+        .option(SubCommandBuilder::new(
+            "rename".into(),
+            "Remove a ship from your fleet.".into(),
+        ))
         .build()
     }
 
     #[tracing::instrument(name = "Discord Interaction - FLEET")]
-    async fn api_handler(
-        cmd: twilight_model::application::interaction::Interaction,
-    ) -> Result<InteractionResponse, DiscordApiError> {
-        let _x = cmd;
+    async fn api_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+        let result: String = match cmd.data.options.get(0) {
+            Some(subcommand) => match subcommand.name.as_str() {
+                "add" => "You would have just added a ship.".into(),
+                "remove" => "you would have just removed a ship.".into(),
+                _ => "No such command.".into(),
+            },
+            None => {
+                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                    "Command data was empty."
+                )));
+            }
+        };
+
+        dbg!(&cmd.data, &cmd.data.options.get(0).unwrap().name.as_str());
+        //TODO: Figure out how to match against a subcommand or user input
         Ok(InteractionResponse::ChannelMessageWithSource(
             CallbackData {
                 allowed_mentions: None,
                 flags: None,
                 tts: None,
-                content: Some(
-                    "This command will show fleet info and allow you to manage it.".to_string(),
-                ),
+                content: Some(result),
                 embeds: Default::default(),
                 components: Default::default(),
             },

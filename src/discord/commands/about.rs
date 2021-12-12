@@ -24,7 +24,7 @@ impl SlashCommand for About {
     }
 
     #[tracing::instrument(name = "Discord Interaction - ABOUT")]
-    async fn api_handler(_: Interaction) -> Result<InteractionResponse, DiscordApiError> {
+    async fn api_handler(_: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
         Ok(InteractionResponse::ChannelMessageWithSource(
             CallbackData {
                 allowed_mentions: None,

@@ -1,7 +1,11 @@
 use async_trait::async_trait;
 use twilight_model::application::{
-    callback::InteractionResponse, command::Command, interaction::Interaction,
+    callback::InteractionResponse,
+    command::Command,
+    interaction::{ApplicationCommand, Interaction},
 };
+
+use crate::discord::commands::Wishlist;
 
 use self::{
     api::DiscordApiError,
@@ -21,15 +25,9 @@ trait SlashCommand {
     /// Command definition
     fn define() -> Command;
 
-    async fn api_handler(interaction: Interaction) -> Result<InteractionResponse, DiscordApiError>;
+    async fn api_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError>;
 }
 
 pub fn commands() -> Vec<Command> {
-    vec![
-        About::define(),
-        Fleet::define(),
-        // Ships::define(),
-        // AddShip::define,
-        // RemoveShip::define(),
-    ]
+    vec![About::define(), Fleet::define(), Wishlist::define()]
 }
