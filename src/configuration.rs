@@ -5,10 +5,7 @@
 //! category and don't warrant an entirely new subcategory.
 
 use ed25519_dalek::PublicKey;
-use std::{
-    convert::{TryFrom, TryInto},
-    num::NonZeroU64,
-};
+use std::convert::{TryFrom, TryInto};
 
 use serde_aux::field_attributes::deserialize_number_from_string;
 use sqlx::{

@@ -3,7 +3,6 @@ use std::{net::TcpListener, sync::Arc};
 use actix_cors::Cors;
 use actix_web::{
     dev::Server,
-    http::header::ContentType,
     web::{self, Data},
     App, HttpServer,
 };
@@ -74,9 +73,12 @@ impl Application {
         struct ClientCredential {
             #[serde(rename = "access_token")]
             pub access_token: String,
-            pub expires_in: u64,
-            pub scope: String,
-            pub token_type: String,
+            #[serde(rename = "expires_in")]
+            pub _expires_in: u64,
+            #[serde(rename = "scope")]
+            pub _scope: String,
+            #[serde(rename = "token_type")]
+            pub _token_type: String,
         }
         let reqwestclient = reqwest::Client::new();
 

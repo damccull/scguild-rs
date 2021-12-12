@@ -4,4 +4,8 @@ application:
 database:
   require_ssl: false
 discord:
-  public_key: "public-key"
+  public_key: public_key_from_discord_app_here
+  application_id: application_id_from_discord_app_here
+  client_id: client_id_from_discord_app_here
+  client_secret: client_secret_from_discord_app_here
+  guild_id: guild_id_here
