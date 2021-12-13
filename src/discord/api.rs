@@ -1,6 +1,9 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use twilight_model::application::{callback::InteractionResponse, interaction::Interaction};
+use twilight_model::application::{
+    callback::InteractionResponse,
+    interaction::{Interaction},
+};
 
 use crate::error_chain_fmt;
 
@@ -52,8 +55,10 @@ async fn application_command_handler(
 
 #[derive(thiserror::Error)]
 pub enum DiscordApiError {
-    #[error("Unsupported interaction {0:?}")]
+    #[error("Unsupported interaction: {0:?}")]
     UnsupportedInteraction(Interaction),
+    #[error("Unsupported command: {0:?}")]
+    UnsupportedCommand(String),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -65,7 +70,10 @@ impl std::fmt::Debug for DiscordApiError {
 impl ResponseError for DiscordApiError {
     fn status_code(&self) -> actix_http::StatusCode {
         match self {
-            DiscordApiError::UnsupportedInteraction(_) => actix_http::StatusCode::BAD_REQUEST,
+            DiscordApiError::UnsupportedInteraction(_) | DiscordApiError::UnsupportedCommand(_) => {
+                actix_http::StatusCode::BAD_REQUEST
+            }
+
             DiscordApiError::UnexpectedError(_) => actix_http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
