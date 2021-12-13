@@ -1,4 +1,4 @@
-[![Tests, lints, coverage](https://github.com/damccull/norseline-rs/actions/workflows/general.yml/badge.svg)](https://github.com/damccull/norseline-rs/actions/workflows/general.yml)[![Docker Package Build and Push](https://github.com/damccull/norseline-rs/actions/workflows/deploy-gh-package.yml/badge.svg)](https://github.com/damccull/norseline-rs/actions/workflows/deploy-gh-package.yml)
+[![CI](https://github.com/damccull/norseline-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/damccull/norseline-rs/actions/workflows/ci.yml)[![Docker Package Build and Push](https://github.com/damccull/norseline-rs/actions/workflows/deploy-gh-package.yml/badge.svg)](https://github.com/damccull/norseline-rs/actions/workflows/deploy-gh-package.yml)
 # Description
 This is intended to be a discord /command interactions and graphql api server for Norseline.
 
