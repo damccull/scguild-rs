@@ -67,6 +67,7 @@ impl Application {
     pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
         self.server.await
     }
+
     #[tracing::instrument(name = "Registering commands with discord", skip(self))]
     pub async fn register_commands_with_discord(&self) -> Result<(), anyhow::Error> {
         #[derive(Debug, Deserialize)]
