@@ -1,14 +1,15 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
+use twilight_interactions::command::{CommandInputData, CommandModel};
 use twilight_model::application::{
-    callback::InteractionResponse,
-    interaction::{Interaction},
+    callback::{CallbackData, InteractionResponse},
+    interaction::Interaction,
 };
 
 use crate::error_chain_fmt;
 
 use super::{
-    commands::{About, Fleet, Wishlist},
+    commands::{About, Fleet, HelloCommand, Wishlist},
     SlashCommand,
 };
 
@@ -44,6 +45,28 @@ async fn application_command_handler(
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
             About::NAME => About::api_handler(cmd).await,
             Fleet::NAME => Fleet::api_handler(cmd).await,
+            "hello" => {
+                let x: CommandInputData = cmd.data.clone().into();
+                let x: HelloCommand = HelloCommand::from_interaction(x).unwrap();
+                let nick = match x.user {
+                    Some(ref y) => match y.member.clone() {
+                        Some(z) => z.nick.unwrap_or_else(|| y.resolved.name.to_owned()),
+                        None => y.resolved.name.to_owned(),
+                    },
+                    None => "everyone".into(),
+                };
+                let message = x.message;
+                Ok(InteractionResponse::ChannelMessageWithSource(
+                    CallbackData {
+                        allowed_mentions: None,
+                        flags: None,
+                        tts: None,
+                        content: Some(format!("{}, {}", message, nick)),
+                        embeds: Default::default(),
+                        components: Default::default(),
+                    },
+                ))
+            }
             Wishlist::NAME => Wishlist::api_handler(cmd).await,
             _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
         },

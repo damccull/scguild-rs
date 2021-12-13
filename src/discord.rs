@@ -1,11 +1,10 @@
 use async_trait::async_trait;
+use twilight_interactions::command::CreateCommand;
 use twilight_model::application::{
-    callback::InteractionResponse,
-    command::Command,
-    interaction::{ApplicationCommand, Interaction},
+    callback::InteractionResponse, command::Command, interaction::ApplicationCommand,
 };
 
-use crate::discord::commands::Wishlist;
+use crate::discord::commands::{HelloCommand, Wishlist};
 
 use self::{
     api::DiscordApiError,
@@ -29,5 +28,10 @@ trait SlashCommand {
 }
 
 pub fn commands() -> Vec<Command> {
-    vec![About::define(), Fleet::define(), Wishlist::define()]
+    vec![
+        About::define(),
+        Fleet::define(),
+        Wishlist::define(),
+        HelloCommand::create_command().into(),
+    ]
 }

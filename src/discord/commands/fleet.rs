@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
     command::{Command, CommandType},
-    interaction::{application_command::{CommandOptionValue, CommandDataOption}, ApplicationCommand},
+    interaction::{application_command::CommandDataOption, ApplicationCommand},
 };
 use twilight_util::builder::command::{CommandBuilder, StringBuilder, SubCommandBuilder};
 
@@ -41,7 +41,7 @@ impl Fleet {
     }
 
     fn cmd_remove_handler(
-        cmd: &ApplicationCommand,
+        _cmd: &ApplicationCommand,
     ) -> Result<InteractionResponse, DiscordApiError> {
         Ok(InteractionResponse::ChannelMessageWithSource(
             CallbackData {

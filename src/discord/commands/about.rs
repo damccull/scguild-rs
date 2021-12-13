@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
     command::{Command, CommandType},
-    interaction::{ApplicationCommand, Interaction},
+    interaction::ApplicationCommand,
 };
 use twilight_util::builder::command::CommandBuilder;
 
