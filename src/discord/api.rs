@@ -1,10 +1,6 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use twilight_interactions::command::{CommandInputData, CommandModel};
-use twilight_model::application::{
-    callback::{CallbackData, InteractionResponse},
-    interaction::Interaction,
-};
+use twilight_model::application::{callback::InteractionResponse, interaction::Interaction};
 
 use crate::error_chain_fmt;
 
