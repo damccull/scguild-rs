@@ -45,28 +45,7 @@ async fn application_command_handler(
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
             About::NAME => About::api_handler(cmd).await,
             Fleet::NAME => Fleet::api_handler(cmd).await,
-            "hello" => {
-                let x: CommandInputData = cmd.data.clone().into();
-                let x: HelloCommand = HelloCommand::from_interaction(x).unwrap();
-                let nick = match x.user {
-                    Some(ref y) => match y.member.clone() {
-                        Some(z) => z.nick.unwrap_or_else(|| y.resolved.name.to_owned()),
-                        None => y.resolved.name.to_owned(),
-                    },
-                    None => "everyone".into(),
-                };
-                let message = x.message;
-                Ok(InteractionResponse::ChannelMessageWithSource(
-                    CallbackData {
-                        allowed_mentions: None,
-                        flags: None,
-                        tts: None,
-                        content: Some(format!("{}, {}", message, nick)),
-                        embeds: Default::default(),
-                        components: Default::default(),
-                    },
-                ))
-            }
+            HelloCommand::NAME => HelloCommand::api_handler(cmd).await,
             Wishlist::NAME => Wishlist::api_handler(cmd).await,
             _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
         },
