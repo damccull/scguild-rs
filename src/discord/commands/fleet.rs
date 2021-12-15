@@ -57,7 +57,7 @@ impl SlashCommand for FleetCommand {
         match FleetCommandPartial::from_interaction(x) {
             Ok(subcommand) => match subcommand {
                 FleetCommandPartial::Add(add_command) => add_command.handle(cmd).await,
-                _ => return Err(DiscordApiError::AutocompleteUnsupported),
+                // _ => return Err(DiscordApiError::AutocompleteUnsupported),
             },
             Err(e) => {
                 return Err(DiscordApiError::UnsupportedCommand(format!(
