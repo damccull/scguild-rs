@@ -118,7 +118,7 @@ impl SlashCommand for HelloCommand {
 
     #[tracing::instrument(name = "Discord Interaction - HELLO AUTOCOMPLETE")]
     async fn autocomplete_handler(
-        cmd: &ApplicationCommand,
+        _cmd: &ApplicationCommand,
     ) -> Result<InteractionResponse, DiscordApiError> {
         Err(DiscordApiError::AutocompleteUnsupported)
     }

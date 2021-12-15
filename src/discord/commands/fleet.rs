@@ -68,9 +68,9 @@ impl SlashCommand for FleetCommand {
         //         )));
         //     }
         // }
-        return Err(DiscordApiError::UnsupportedCommand(format!(
-            "Something went wrong parsing the interaction:",
-        )));
+        return Err(DiscordApiError::UnsupportedCommand(
+            "Something went wrong parsing the interaction:".to_string(),
+        ));
     }
 }
 
@@ -97,7 +97,7 @@ impl AddCommand {
         };
 
         unsafe {
-            fakedb.push(Ship {
+            FAKEDB.push(Ship {
                 model: ship_model.to_owned(),
                 name: self.ship_name.clone(),
             });
@@ -196,7 +196,7 @@ impl RenameCommand {
 #[command(name = "show", desc = "Show your fleet to the channel.")]
 pub struct ShowCommand {
     /// This is a dummy option. Set it true or false. It's just here temporarily due to a bug.
-    dummy: bool,
+    _dummy: bool,
 }
 
 impl ShowCommand {
@@ -211,7 +211,7 @@ impl ShowCommand {
                     allowed_mentions: None,
                     flags: None,
                     tts: None,
-                    content: Some(format!("Showing off the fleet.\n```\n{:?}\n```", fakedb)),
+                    content: Some(format!("Showing off the fleet.\n```\n{:?}\n```", FAKEDB)),
                     embeds: Default::default(),
                     components: Default::default(),
                 },
@@ -221,9 +221,10 @@ impl ShowCommand {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct Ship {
-    model: String,
-    name: Option<String>,
+    pub model: String,
+    pub name: Option<String>,
 }
 
-static mut fakedb: Vec<Ship> = Vec::new();
+static mut FAKEDB: Vec<Ship> = Vec::new();

@@ -15,7 +15,9 @@ mod commands;
 #[async_trait]
 trait SlashCommand {
     async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError>;
-    async fn autocomplete_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError>;
+    async fn autocomplete_handler(
+        cmd: &ApplicationCommand,
+    ) -> Result<InteractionResponse, DiscordApiError>;
 }
 
 pub fn commands() -> Vec<Command> {

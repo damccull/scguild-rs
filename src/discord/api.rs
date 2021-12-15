@@ -17,13 +17,14 @@ pub async fn discord_api(
     _req: HttpRequest,
     interaction: web::Json<Interaction>,
 ) -> Result<HttpResponse, DiscordApiError> {
-    match interaction.0 {
+    let interaction = interaction.into_inner();
+    match interaction {
         Interaction::Ping(_) => Ok(HttpResponse::Ok()
             .append_header(header::ContentType(mime::APPLICATION_JSON))
             .json(InteractionResponse::Pong)),
-        Interaction::ApplicationCommand(_) => {
+        Interaction::ApplicationCommand(c) => {
             // Run handler to get correct response
-            let response = application_command_handler(interaction.0)
+            let response = application_command_handler(&c)
                 .await
                 .context("Problem running application command handler")?;
             Ok(HttpResponse::Ok()
@@ -39,22 +40,17 @@ pub async fn discord_api(
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
                 .json(response))
         }
-        _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
-            "Bad interaction".to_string()
-        ))),
+        _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
     }
 }
 
-#[tracing::instrument(name = "Handling ApplicationCommand", skip(interaction))]
+#[tracing::instrument(name = "Handling ApplicationCommand", skip(cmd))]
 async fn application_command_handler(
-    interaction: Interaction,
+    cmd: &ApplicationCommand,
 ) -> Result<InteractionResponse, DiscordApiError> {
-    match interaction {
-        Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
-            FleetCommand::NAME => FleetCommand::handler(cmd).await,
-            HelloCommand::NAME => HelloCommand::handler(cmd).await,
-            _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
-        },
+    match cmd.data.name.as_ref() {
+        FleetCommand::NAME => FleetCommand::handler(cmd).await,
+        HelloCommand::NAME => HelloCommand::handler(cmd).await,
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
             "Invalid interaction data".to_string()
         ))),
