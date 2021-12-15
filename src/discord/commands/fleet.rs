@@ -54,6 +54,7 @@ impl SlashCommand for FleetCommand {
     ) -> Result<InteractionResponse, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
         dbg!(&x);
+        //TODO: If this won't work, manually deconstruct the CommandDataOption with twilight-models
         let partial = AddCommandPartial::from_interaction(x);
         dbg!(&partial);
         // match partial {
@@ -220,6 +221,7 @@ impl ShowCommand {
     }
 }
 
+//TODO: Get rid of this when testing is done and a real database is in use
 #[derive(Debug)]
 #[allow(dead_code)]
 struct Ship {
