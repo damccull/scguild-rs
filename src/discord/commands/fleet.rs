@@ -1,48 +1,164 @@
 use async_trait::async_trait;
+use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
-    command::{Command, CommandType},
-    interaction::{application_command::CommandDataOption, ApplicationCommand},
+    interaction::ApplicationCommand,
 };
-use twilight_util::builder::command::{CommandBuilder, StringBuilder, SubCommandBuilder};
 
 use crate::discord::{api::DiscordApiError, SlashCommand};
 
-pub struct Fleet(pub ApplicationCommand);
+#[allow(clippy::large_enum_variant)]
+#[derive(CommandModel, CreateCommand, Debug)]
+#[command(name = "fleet", desc = "Manage or view your fleet, or show it off.")]
+pub enum FleetCommand {
+    #[command(name = "add")]
+    Add(AddCommand),
+    #[command(name = "list")]
+    List(ListCommand),
+    #[command(name = "remove")]
+    Remove(RemoveCommand),
+    #[command(name = "rename")]
+    Rename(RenameCommand),
+    #[command(name = "show")]
+    Show(ShowCommand),
+}
+impl FleetCommand {
+    pub const NAME: &'static str = "fleet";
+}
 
-impl Fleet {
-    pub const CMD_LIST_NAME: &'static str = "list";
-    pub const CMD_LIST_DESC: &'static str =
-        "List all the ships in your (or someone else's) fleet privately.";
-    pub const CMD_SHOW_NAME: &'static str = "show";
-    pub const CMD_SHOW_DESC: &'static str = "Show the whole channel the ships in your fleet.";
-    pub const CMD_ADD_NAME: &'static str = "add";
-    pub const CMD_ADD_DESC: &'static str = "Add a new ship to your fleet.";
-    pub const CMD_REMOVE_NAME: &'static str = "remove";
-    pub const CMD_REMOVE_DESC: &'static str = "Remove a ship from your fleet.";
-    pub const CMD_RENAME_NAME: &'static str = "rename";
-    pub const CMD_RENAME_DESC: &'static str = "Rename a ship in your fleet.";
+#[async_trait]
+impl SlashCommand for FleetCommand {
+    #[tracing::instrument(name = "Discord Interaction - FLEET", skip(cmd))]
+    async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+        let x: CommandInputData = cmd.data.clone().into();
+        match FleetCommand::from_interaction(x) {
+            Ok(subcommand) => match subcommand {
+                FleetCommand::Add(add_command) => add_command.handle(cmd).await,
+                FleetCommand::List(_) => todo!(),
+                FleetCommand::Remove(_) => todo!(),
+                FleetCommand::Rename(_) => todo!(),
+                FleetCommand::Show(show_command) => show_command.handle(cmd).await,
+            },
+            Err(e) => {
+                return Err(DiscordApiError::UnsupportedCommand(format!(
+                    "Something went wrong parsing the interaction: {}",
+                    e
+                )));
+            }
+        }
+    }
 
-    fn cmd_add_handler(cmd: &CommandDataOption) -> Result<InteractionResponse, DiscordApiError> {
-        let x = cmd;
+    #[tracing::instrument(name = "Discord Interaction - FLEET ADD AUTOCOMPLETE", skip(cmd))]
+    async fn autocomplete_handler(
+        cmd: &ApplicationCommand,
+    ) -> Result<InteractionResponse, DiscordApiError> {
+        let x: CommandInputData = cmd.data.clone().into();
         dbg!(&x);
-        let ship_name = &x.name;
+        let partial = AddCommandPartial::from_interaction(x);
+        dbg!(&partial);
+        // match partial {
+        //     Ok(subcommand) => match subcommand {
+        //         FleetCommand::Add(add_command) => add_command.handle(cmd).await,
+        //         _ => return Err(DiscordApiError::AutocompleteUnsupported),
+        //     },
+        //     Err(e) => {
+        //         return Err(DiscordApiError::UnsupportedCommand(format!(
+        //             "Something went wrong parsing the interaction: {}",
+        //             e
+        //         )));
+        //     }
+        // }
+        return Err(DiscordApiError::UnsupportedCommand(format!(
+            "Something went wrong parsing the interaction:",
+        )));
+    }
+}
+
+#[derive(CommandModel, CreateCommand, Debug)]
+#[command(name = "add", desc = "Add a ship to your fleet.")]
+pub struct AddCommand {
+    /// The model of ship you want to add.
+    #[command(autocomplete = true)]
+    pub ship_model: String,
+    /// The name of the ship. (Optional)
+    pub ship_name: Option<String>,
+}
+
+impl AddCommand {
+    #[tracing::instrument(name = "Discord Interaction - FLEET ADD", skip(self))]
+    async fn handle(
+        &self,
+        cmd: &ApplicationCommand,
+    ) -> Result<InteractionResponse, DiscordApiError> {
+        let ship_model = self.ship_model.to_owned();
+        let ship_name = match self.ship_name.to_owned() {
+            Some(name) => format!(" named _{}_", name),
+            None => "".into(),
+        };
+
+        unsafe {
+            fakedb.push(Ship {
+                model: ship_model.to_owned(),
+                name: self.ship_name.clone(),
+            });
+        }
 
         Ok(InteractionResponse::ChannelMessageWithSource(
             CallbackData {
                 allowed_mentions: None,
                 flags: None,
                 tts: None,
-                content: Some(format!("Adding a ship named '{}' to the fleet.", ship_name)),
+                content: Some(format!(
+                    "Adding a {}{} to the fleet.",
+                    ship_model, ship_name
+                )),
                 embeds: Default::default(),
                 components: Default::default(),
             },
         ))
     }
+}
 
-    fn cmd_remove_handler(
-        _cmd: &ApplicationCommand,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+#[derive(CommandModel, Debug)]
+#[command(partial = true)]
+pub struct AddCommandPartial {
+    /// The model of ship you want to add.
+    pub ship_model: String,
+}
+
+#[derive(CommandModel, CreateCommand, Debug)]
+#[command(
+    name = "list",
+    desc = "Privately list the ships in your, or the specified user's, fleet."
+)]
+pub struct ListCommand {
+    /// The user who's fleet you'd like to see. (Optional)
+    pub user: Option<ResolvedUser>,
+}
+
+impl ListCommand {
+    #[tracing::instrument(name = "Discord Interaction - FLEET")]
+    async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+        Ok(InteractionResponse::ChannelMessageWithSource(
+            CallbackData {
+                allowed_mentions: None,
+                flags: None,
+                tts: None,
+                content: Some("Privately perusing the fleet.".into()),
+                embeds: Default::default(),
+                components: Default::default(),
+            },
+        ))
+    }
+}
+
+#[derive(CommandModel, CreateCommand, Debug)]
+#[command(name = "remove", desc = "Remove a ship from your fleet.")]
+pub struct RemoveCommand {}
+
+impl RemoveCommand {
+    #[tracing::instrument(name = "Discord Interaction - FLEET")]
+    async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
         Ok(InteractionResponse::ChannelMessageWithSource(
             CallbackData {
                 allowed_mentions: None,
@@ -56,64 +172,58 @@ impl Fleet {
     }
 }
 
-#[async_trait]
-impl SlashCommand for Fleet {
-    const NAME: &'static str = "fleet";
+#[derive(CommandModel, CreateCommand, Debug)]
+#[command(name = "rename", desc = "Remame a ship in your fleet.")]
+pub struct RenameCommand {}
 
-    fn define() -> Command {
-        CommandBuilder::new(
-            Fleet::NAME.into(),
-            "Displays and manages a player's fleet.".into(),
-            CommandType::ChatInput,
-        )
-        .option(SubCommandBuilder::new(
-            Fleet::CMD_LIST_NAME.into(),
-            Fleet::CMD_LIST_DESC.into(),
-        ))
-        .option(SubCommandBuilder::new(
-            Fleet::CMD_SHOW_NAME.into(),
-            Fleet::CMD_SHOW_DESC.into(),
-        ))
-        .option(
-            SubCommandBuilder::new(Fleet::CMD_ADD_NAME.into(), Fleet::CMD_ADD_DESC.into())
-                .option(
-                    StringBuilder::new(
-                        "name".into(),
-                        "What you want your ship to be named.".into(),
-                    )
-                    .required(true),
-                )
-                .option(StringBuilder::new(
-                    "description".into(),
-                    "Describe your ship".into(),
-                )),
-        )
-        .option(SubCommandBuilder::new(
-            Fleet::CMD_REMOVE_NAME.into(),
-            Fleet::CMD_REMOVE_DESC.into(),
-        ))
-        .option(SubCommandBuilder::new(
-            Fleet::CMD_RENAME_NAME.into(),
-            Fleet::CMD_RENAME_DESC.into(),
-        ))
-        .build()
-    }
-
+impl RenameCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET")]
-    async fn api_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
-        match cmd.data.options.get(0) {
-            Some(subcommand) => match subcommand.name.as_str() {
-                Fleet::CMD_ADD_NAME => Fleet::cmd_add_handler(cmd.data.options.get(0).unwrap()),
-                Fleet::CMD_REMOVE_NAME => Fleet::cmd_remove_handler(cmd),
-                _ => Err(DiscordApiError::UnsupportedCommand(
-                    cmd.data.name.to_owned(),
-                )),
+    async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+        Ok(InteractionResponse::ChannelMessageWithSource(
+            CallbackData {
+                allowed_mentions: None,
+                flags: None,
+                tts: None,
+                content: Some("Renaming a ship in the fleet.".into()),
+                embeds: Default::default(),
+                components: Default::default(),
             },
-            None => {
-                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
-                    "Command data was empty."
-                )));
-            }
+        ))
+    }
+}
+
+#[derive(CommandModel, CreateCommand, Debug)]
+#[command(name = "show", desc = "Show your fleet to the channel.")]
+pub struct ShowCommand {
+    /// This is a dummy option. Set it true or false. It's just here temporarily due to a bug.
+    dummy: bool,
+}
+
+impl ShowCommand {
+    #[tracing::instrument(name = "Discord Interaction - FLEET SHOW")]
+    async fn handle(
+        &self,
+        _cmd: &ApplicationCommand,
+    ) -> Result<InteractionResponse, DiscordApiError> {
+        unsafe {
+            Ok(InteractionResponse::ChannelMessageWithSource(
+                CallbackData {
+                    allowed_mentions: None,
+                    flags: None,
+                    tts: None,
+                    content: Some(format!("Showing off the fleet.\n```\n{:?}\n```", fakedb)),
+                    embeds: Default::default(),
+                    components: Default::default(),
+                },
+            ))
         }
     }
 }
+
+#[derive(Debug)]
+struct Ship {
+    model: String,
+    name: Option<String>,
+}
+
+static mut fakedb: Vec<Ship> = Vec::new();

@@ -14,35 +14,6 @@ pub struct Wishlist(pub ApplicationCommand);
 impl SlashCommand for Wishlist {
     const NAME: &'static str = "wishlist";
 
-    fn define() -> Command {
-        CommandBuilder::new(
-            Wishlist::NAME.into(),
-            "Displays and manages a player's wishlist.".into(),
-            CommandType::ChatInput,
-        )
-        .option(SubCommandBuilder::new(
-            "list".into(),
-            "List all the ships in your (or someone else's) wishlist privately.".into(),
-        ))
-        .option(SubCommandBuilder::new(
-            "show".into(),
-            "Show the whole channel the ships in your wishlist.".into(),
-        ))
-        .option(SubCommandBuilder::new(
-            "add".into(),
-            "Add a new ship to your wishlist.".into(),
-        ))
-        .option(SubCommandBuilder::new(
-            "remove".into(),
-            "Remove a ship from your wishlist.".into(),
-        ))
-        .option(SubCommandBuilder::new(
-            "rename".into(),
-            "Remove a ship from your wishlist.".into(),
-        ))
-        .build()
-    }
-
     #[tracing::instrument(name = "Discord Interaction - WISHLIST")]
     async fn api_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
         let result: String = match cmd.data.options.get(0) {

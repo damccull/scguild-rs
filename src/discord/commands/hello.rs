@@ -31,17 +31,14 @@ pub enum HelloCommand {
     #[command(name = "wave")]
     Wave(WaveSub),
 }
+impl HelloCommand {
+    pub const NAME: &'static str = "hello";
+}
 
 #[async_trait]
 impl SlashCommand for HelloCommand {
-    const NAME: &'static str = "hello";
-
-    fn define() -> twilight_model::application::command::Command {
-        todo!()
-    }
-
     #[tracing::instrument(name = "Discord Interaction - HELLO")]
-    async fn api_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
         {
             let x: CommandInputData = cmd.data.clone().into();
             match HelloCommand::from_interaction(x) {
@@ -117,5 +114,12 @@ impl SlashCommand for HelloCommand {
                 }
             }
         }
+    }
+
+    #[tracing::instrument(name = "Discord Interaction - HELLO AUTOCOMPLETE")]
+    async fn autocomplete_handler(
+        cmd: &ApplicationCommand,
+    ) -> Result<InteractionResponse, DiscordApiError> {
+        Err(DiscordApiError::AutocompleteUnsupported)
     }
 }

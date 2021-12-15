@@ -1,11 +1,14 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use twilight_model::application::{callback::InteractionResponse, interaction::Interaction};
+use twilight_model::application::{
+    callback::InteractionResponse,
+    interaction::{ApplicationCommand, Interaction},
+};
 
 use crate::error_chain_fmt;
 
 use super::{
-    commands::{About, Fleet, HelloCommand, Wishlist},
+    commands::{FleetCommand, HelloCommand},
     SlashCommand,
 };
 
@@ -27,6 +30,15 @@ pub async fn discord_api(
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
                 .json(response))
         }
+        Interaction::ApplicationCommandAutocomplete(c) => {
+            let response = application_command_autocomplete_handler(&c)
+                .await
+                .context("Problem running application command autocomplete handler")?;
+
+            Ok(HttpResponse::Ok()
+                .append_header(header::ContentType(mime::APPLICATION_JSON))
+                .json(response))
+        }
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
             "Bad interaction".to_string()
         ))),
@@ -39,10 +51,8 @@ async fn application_command_handler(
 ) -> Result<InteractionResponse, DiscordApiError> {
     match interaction {
         Interaction::ApplicationCommand(ref cmd) => match cmd.data.name.as_ref() {
-            About::NAME => About::api_handler(cmd).await,
-            Fleet::NAME => Fleet::api_handler(cmd).await,
-            HelloCommand::NAME => HelloCommand::api_handler(cmd).await,
-            Wishlist::NAME => Wishlist::api_handler(cmd).await,
+            FleetCommand::NAME => FleetCommand::handler(cmd).await,
+            HelloCommand::NAME => HelloCommand::handler(cmd).await,
             _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
         },
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
@@ -51,8 +61,22 @@ async fn application_command_handler(
     }
 }
 
+#[tracing::instrument(name = "Handling ApplicationCommandAutocomplete", skip(cmd))]
+async fn application_command_autocomplete_handler(
+    cmd: &ApplicationCommand,
+) -> Result<InteractionResponse, DiscordApiError> {
+    match cmd.data.name.as_ref() {
+        FleetCommand::NAME => FleetCommand::autocomplete_handler(cmd).await,
+        _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+            "Invalid autocomplete interaction data".to_string()
+        ))),
+    }
+}
+
 #[derive(thiserror::Error)]
 pub enum DiscordApiError {
+    #[error("Autocomplete is not supported for this command.")]
+    AutocompleteUnsupported,
     #[error("Unsupported interaction: {0:?}")]
     UnsupportedInteraction(Interaction),
     #[error("Unsupported command: {0:?}")]
@@ -68,9 +92,9 @@ impl std::fmt::Debug for DiscordApiError {
 impl ResponseError for DiscordApiError {
     fn status_code(&self) -> actix_http::StatusCode {
         match self {
-            DiscordApiError::UnsupportedInteraction(_) | DiscordApiError::UnsupportedCommand(_) => {
-                actix_http::StatusCode::BAD_REQUEST
-            }
+            DiscordApiError::AutocompleteUnsupported
+            | DiscordApiError::UnsupportedInteraction(_)
+            | DiscordApiError::UnsupportedCommand(_) => actix_http::StatusCode::BAD_REQUEST,
 
             DiscordApiError::UnexpectedError(_) => actix_http::StatusCode::INTERNAL_SERVER_ERROR,
         }

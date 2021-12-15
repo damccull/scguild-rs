@@ -4,12 +4,9 @@ use twilight_model::application::{
     callback::InteractionResponse, command::Command, interaction::ApplicationCommand,
 };
 
-use crate::discord::commands::{HelloCommand, Wishlist};
+use crate::discord::commands::{FleetCommand, HelloCommand};
 
-use self::{
-    api::DiscordApiError,
-    commands::{About, Fleet},
-};
+use self::api::DiscordApiError;
 
 pub mod api;
 mod commands;
@@ -17,21 +14,15 @@ mod commands;
 
 #[async_trait]
 trait SlashCommand {
-    /// Name of the command.
-    /// Required to match incoming interactions.
-    const NAME: &'static str;
-
-    /// Command definition
-    fn define() -> Command;
-
-    async fn api_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError>;
+    async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError>;
+    async fn autocomplete_handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError>;
 }
 
 pub fn commands() -> Vec<Command> {
     vec![
-        About::define(),
-        Fleet::define(),
-        Wishlist::define(),
+        // About::define(),
+        FleetCommand::create_command().into(),
+        // Wishlist::define(),
         HelloCommand::create_command().into(),
     ]
 }
