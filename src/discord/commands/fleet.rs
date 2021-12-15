@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
 use twilight_model::application::{
-    callback::{CallbackData, InteractionResponse},
+    callback::{Autocomplete, CallbackData, InteractionResponse},
+    command::CommandOptionChoice,
     interaction::ApplicationCommand,
 };
 
@@ -53,25 +54,18 @@ impl SlashCommand for FleetCommand {
         cmd: &ApplicationCommand,
     ) -> Result<InteractionResponse, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
-        dbg!(&x);
-        //TODO: If this won't work, manually deconstruct the CommandDataOption with twilight-models
-        let partial = AddCommandPartial::from_interaction(x);
-        dbg!(&partial);
-        // match partial {
-        //     Ok(subcommand) => match subcommand {
-        //         FleetCommand::Add(add_command) => add_command.handle(cmd).await,
-        //         _ => return Err(DiscordApiError::AutocompleteUnsupported),
-        //     },
-        //     Err(e) => {
-        //         return Err(DiscordApiError::UnsupportedCommand(format!(
-        //             "Something went wrong parsing the interaction: {}",
-        //             e
-        //         )));
-        //     }
-        // }
-        return Err(DiscordApiError::UnsupportedCommand(
-            "Something went wrong parsing the interaction:".to_string(),
-        ));
+        match FleetCommandPartial::from_interaction(x) {
+            Ok(subcommand) => match subcommand {
+                FleetCommandPartial::Add(add_command) => add_command.handle(cmd).await,
+                _ => return Err(DiscordApiError::AutocompleteUnsupported),
+            },
+            Err(e) => {
+                return Err(DiscordApiError::UnsupportedCommand(format!(
+                    "Something went wrong parsing the interaction: {}",
+                    e
+                )));
+            }
+        }
     }
 }
 
@@ -79,9 +73,10 @@ impl SlashCommand for FleetCommand {
 #[command(name = "add", desc = "Add a ship to your fleet.")]
 pub struct AddCommand {
     /// The model of ship you want to add.
-    #[command(autocomplete = true)]
+    #[command(rename = "model", autocomplete = true)]
     pub ship_model: String,
     /// The name of the ship. (Optional)
+    #[command(rename = "name")]
     pub ship_name: Option<String>,
 }
 
@@ -118,13 +113,6 @@ impl AddCommand {
             },
         ))
     }
-}
-
-#[derive(CommandModel, Debug)]
-#[command(partial = true)]
-pub struct AddCommandPartial {
-    /// The model of ship you want to add.
-    pub ship_model: String,
 }
 
 #[derive(CommandModel, CreateCommand, Debug)]
@@ -221,6 +209,47 @@ impl ShowCommand {
     }
 }
 
+// AUTOCOMPLETE command models
+
+#[derive(CommandModel, Debug)]
+#[command(partial = true)]
+pub enum FleetCommandPartial {
+    #[command(name = "add")]
+    Add(AddCommandPartial),
+}
+
+#[derive(CommandModel, Debug)]
+#[command(partial = true)]
+pub struct AddCommandPartial {
+    /// The model of ship you want to add.
+    #[command(rename = "model")]
+    pub ship_model: String,
+}
+
+impl AddCommandPartial {
+    async fn handle(
+        &self,
+        _cmd: &ApplicationCommand,
+    ) -> Result<InteractionResponse, DiscordApiError> {
+        let mut choices = Vec::<CommandOptionChoice>::new();
+        MODELS
+            .iter()
+            .filter(|s| {
+                s.to_lowercase()
+                    .starts_with(self.ship_model.to_lowercase().as_str())
+            })
+            .map(|s| CommandOptionChoice::String {
+                name: s.to_string(),
+                value: s.to_string(),
+            })
+            .collect::<Vec<_>>()
+            .iter()
+            .for_each(|s| choices.push(s.clone()));
+
+        Ok(InteractionResponse::Autocomplete(Autocomplete { choices }))
+    }
+}
+
 //TODO: Get rid of this when testing is done and a real database is in use
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -230,3 +259,5 @@ struct Ship {
 }
 
 static mut FAKEDB: Vec<Ship> = Vec::new();
+
+static MODELS: [&str; 4] = ["Aurora", "Carrack", "Mustang", "Freelancer MAX"];

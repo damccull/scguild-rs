@@ -19,9 +19,12 @@ pub async fn discord_api(
 ) -> Result<HttpResponse, DiscordApiError> {
     let interaction = interaction.into_inner();
     match interaction {
-        Interaction::Ping(_) => Ok(HttpResponse::Ok()
-            .append_header(header::ContentType(mime::APPLICATION_JSON))
-            .json(InteractionResponse::Pong)),
+        Interaction::Ping(_) => {
+            tracing::info!("Received ping, sending pong.");
+            Ok(HttpResponse::Ok()
+                .append_header(header::ContentType(mime::APPLICATION_JSON))
+                .json(InteractionResponse::Pong))
+        }
         Interaction::ApplicationCommand(c) => {
             // Run handler to get correct response
             let response = application_command_handler(&c)
