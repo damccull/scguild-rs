@@ -6,7 +6,7 @@ use twilight_model::application::{
     interaction::ApplicationCommand,
 };
 
-use crate::discord::{api::DiscordApiError, SlashCommand};
+use crate::{discord::{api::DiscordApiError, SlashCommand}, database};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(CommandModel, CreateCommand, Debug)]
@@ -232,6 +232,7 @@ impl AddCommandPartial {
         _cmd: &ApplicationCommand,
     ) -> Result<InteractionResponse, DiscordApiError> {
         let mut choices = Vec::<CommandOptionChoice>::new();
+        for ship in database::all_ship_models() {}
         MODELS
             .iter()
             .filter(|s| {
