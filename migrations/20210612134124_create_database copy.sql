@@ -4,6 +4,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.ship_models
 (
     id uuid NOT NULL,
+    class_name text NOT NULL UNIQUE,
     name text NOT NULL,
     description text,
     PRIMARY KEY (id)
