@@ -155,10 +155,7 @@ fn run(
     discord_public_key: PublicKey,
 ) -> Result<Server, std::io::Error> {
     // Wrap shared things in smart pointers
-    // let db_pool = Data::new(db_pool);
     let base_url = Data::new(base_url);
-
-    // let db_pool = Data::new(db_pool);
     let db_pool = Data::new(db_pool);
 
     let server = HttpServer::new(move || {
