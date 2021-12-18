@@ -8,14 +8,12 @@ use twilight_model::application::{
 
 use crate::error_chain_fmt;
 
-use super::{
-    commands::{FleetCommand, HelloCommand},
-};
+use super::commands::{FleetCommand, HelloCommand};
 
 #[tracing::instrument(name = "Calling Discord API", skip(_req, interaction))]
 pub async fn discord_api(
     _req: HttpRequest,
-    pool: &PgPool,
+    pool: web::Data<PgPool>,
     interaction: web::Json<Interaction>,
 ) -> Result<HttpResponse, DiscordApiError> {
     let interaction = interaction.into_inner();
@@ -36,7 +34,7 @@ pub async fn discord_api(
                 .json(response))
         }
         Interaction::ApplicationCommandAutocomplete(c) => {
-            let response = application_command_autocomplete_handler(&c, pool)
+            let response = application_command_autocomplete_handler(&c, &pool)
                 .await
                 .context("Problem running application command autocomplete handler")?;
 
