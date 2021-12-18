@@ -1,5 +1,6 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
+use sqlx::PgPool;
 use twilight_model::application::{
     callback::InteractionResponse,
     interaction::{ApplicationCommand, Interaction},
@@ -9,12 +10,12 @@ use crate::error_chain_fmt;
 
 use super::{
     commands::{FleetCommand, HelloCommand},
-    SlashCommand,
 };
 
 #[tracing::instrument(name = "Calling Discord API", skip(_req, interaction))]
 pub async fn discord_api(
     _req: HttpRequest,
+    pool: &PgPool,
     interaction: web::Json<Interaction>,
 ) -> Result<HttpResponse, DiscordApiError> {
     let interaction = interaction.into_inner();
@@ -35,7 +36,7 @@ pub async fn discord_api(
                 .json(response))
         }
         Interaction::ApplicationCommandAutocomplete(c) => {
-            let response = application_command_autocomplete_handler(&c)
+            let response = application_command_autocomplete_handler(&c, pool)
                 .await
                 .context("Problem running application command autocomplete handler")?;
 
@@ -63,9 +64,10 @@ async fn application_command_handler(
 #[tracing::instrument(name = "Handling ApplicationCommandAutocomplete", skip(cmd))]
 async fn application_command_autocomplete_handler(
     cmd: &ApplicationCommand,
+    pool: &PgPool,
 ) -> Result<InteractionResponse, DiscordApiError> {
     match cmd.data.name.as_ref() {
-        FleetCommand::NAME => FleetCommand::autocomplete_handler(cmd).await,
+        FleetCommand::NAME => FleetCommand::autocomplete_handler(cmd, pool).await,
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
             "Invalid autocomplete interaction data".to_string()
         ))),

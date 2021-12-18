@@ -1,4 +1,4 @@
-use async_trait::async_trait;
+use sqlx::PgPool;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
 use twilight_model::application::{
     callback::{Autocomplete, CallbackData, InteractionResponse},
@@ -6,7 +6,7 @@ use twilight_model::application::{
     interaction::ApplicationCommand,
 };
 
-use crate::{discord::{api::DiscordApiError, SlashCommand}, database};
+use crate::{database, discord::api::DiscordApiError};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(CommandModel, CreateCommand, Debug)]
@@ -27,10 +27,9 @@ impl FleetCommand {
     pub const NAME: &'static str = "fleet";
 }
 
-#[async_trait]
-impl SlashCommand for FleetCommand {
+impl FleetCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET", skip(cmd))]
-    async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    pub async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
         match FleetCommand::from_interaction(x) {
             Ok(subcommand) => match subcommand {
@@ -50,13 +49,14 @@ impl SlashCommand for FleetCommand {
     }
 
     #[tracing::instrument(name = "Discord Interaction - FLEET ADD AUTOCOMPLETE", skip(cmd))]
-    async fn autocomplete_handler(
+    pub async fn autocomplete_handler(
         cmd: &ApplicationCommand,
+        pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
         match FleetCommandPartial::from_interaction(x) {
             Ok(subcommand) => match subcommand {
-                FleetCommandPartial::Add(add_command) => add_command.handle(cmd).await,
+                FleetCommandPartial::Add(add_command) => add_command.handle(cmd, pool).await,
                 // _ => return Err(DiscordApiError::AutocompleteUnsupported),
             },
             Err(e) => {
@@ -230,9 +230,10 @@ impl AddCommandPartial {
     async fn handle(
         &self,
         _cmd: &ApplicationCommand,
+        pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
         let mut choices = Vec::<CommandOptionChoice>::new();
-        for ship in database::all_ship_models() {}
+        for ship in database::all_ship_models(pool).await {}
         MODELS
             .iter()
             .filter(|s| {

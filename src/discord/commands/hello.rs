@@ -1,11 +1,10 @@
-use async_trait::async_trait;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
     interaction::ApplicationCommand,
 };
 
-use crate::discord::{api::DiscordApiError, SlashCommand};
+use crate::discord::api::DiscordApiError;
 
 #[derive(CommandModel, CreateCommand, Debug)]
 #[command(name = "wave", desc = "wave at other members")]
@@ -35,10 +34,9 @@ impl HelloCommand {
     pub const NAME: &'static str = "hello";
 }
 
-#[async_trait]
-impl SlashCommand for HelloCommand {
+impl HelloCommand {
     #[tracing::instrument(name = "Discord Interaction - HELLO")]
-    async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    pub async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
         {
             let x: CommandInputData = cmd.data.clone().into();
             match HelloCommand::from_interaction(x) {
