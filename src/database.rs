@@ -3,11 +3,6 @@ mod models;
 pub use models::*;
 use sqlx::PgPool;
 
-
-pub struct StarCitizenRepository {
-    pool: &PgPool
-}
-impl StarCitizenRepository {}
 #[tracing::instrument(name = "Database - Get all ship models")]
 pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Error> {
     Ok(sqlx::query!(
