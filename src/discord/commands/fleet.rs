@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use sqlx::PgPool;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
 use twilight_model::application::{
@@ -5,6 +7,7 @@ use twilight_model::application::{
     command::CommandOptionChoice,
     interaction::ApplicationCommand,
 };
+use uuid::Uuid;
 
 use crate::{database, discord::api::DiscordApiError};
 
@@ -86,7 +89,16 @@ impl AddCommand {
         &self,
         cmd: &ApplicationCommand,
     ) -> Result<InteractionResponse, DiscordApiError> {
-        let ship_model = self.ship_model.to_owned();
+        let ship_model = match Uuid::from_str(&self.ship_model) {
+            Ok(x) => x,
+            Err(e) => {
+                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                    "Unable to parse given string as UUID: {:?}",
+                    e
+                )))
+            }
+        };
+        //TODO: Database lookup by ID for the ship_model
         let ship_name = match self.ship_name.to_owned() {
             Some(name) => format!(" named _{}_", name),
             None => "".into(),
@@ -227,6 +239,7 @@ pub struct AddCommandPartial {
 }
 
 impl AddCommandPartial {
+    #[tracing::instrument(name = "Discord Autocomplete Handler - AddCommandPartial")]
     async fn handle(
         &self,
         _cmd: &ApplicationCommand,
