@@ -58,6 +58,7 @@ thiserror = "1.0.30"
 mime = "0.3.16"
 async-trait = "0.1.52"
 twilight-interactions = "0.8"
+urlencoding = "2.1.0"
 
 
 [dependencies.ed25519-dalek]
