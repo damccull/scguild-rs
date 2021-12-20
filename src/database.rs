@@ -31,7 +31,7 @@ pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Er
 }
 
 #[tracing::instrument(name = "Database - Get Ship By ID")]
-pub async fn get_ship_by_id(pool: &PgPool, id: String) -> Result<Option<ShipModel>, DatabaseError> {
+pub async fn get_ship_by_id(pool: &PgPool, id: String) -> Result<ShipModel, DatabaseError> {
     let id = match Uuid::from_str(&id) {
         Ok(x) => x,
         Err(e) => {
@@ -41,7 +41,7 @@ pub async fn get_ship_by_id(pool: &PgPool, id: String) -> Result<Option<ShipMode
             )))
         }
     };
-    let r = sqlx::query!(
+    let record = sqlx::query!(
         r#"
         SELECT id, class_name, name, description
         FROM ship_models
@@ -49,16 +49,15 @@ pub async fn get_ship_by_id(pool: &PgPool, id: String) -> Result<Option<ShipMode
         "#,
         id
     )
-    .fetch_optional(pool)
+    .fetch_one(pool)
     .await
-    .context("Failed to execute query")?
-    .map(|row| ShipModel {
-        id: row.id,
-        name: row.name,
-        description: row.description,
-    });
+    .context("Failed to execute query")?;
 
-    Ok(r)
+    Ok(ShipModel {
+        id: record.id,
+        name: record.name,
+        description: record.description,
+    })
 }
 
 #[derive(thiserror::Error)]

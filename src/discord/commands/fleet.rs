@@ -6,6 +6,7 @@ use twilight_model::application::{
     command::CommandOptionChoice,
     interaction::ApplicationCommand,
 };
+use uuid::Uuid;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(CommandModel, CreateCommand, Debug)]
@@ -89,25 +90,16 @@ impl AddCommand {
         cmd: &ApplicationCommand,
         pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
-        let model = match database::get_ship_by_id(pool, self.ship_model.to_owned()).await {
-            Ok(x) => x,
-            Err(e) => {
-                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
-                    "Unable to parse given string as UUID: {:?}",
-                    e
-                )))
-            }
-        };
-        let ship_name = match self.ship_name.to_owned() {
-            Some(name) => format!(" named _{}_", name),
-            None => "".into(),
-        };
-
-        match model {
-            Some(model) => {
+        dbg!(&self.ship_model);
+        match database::get_ship_by_id(pool, self.ship_model.to_owned()).await {
+            Ok(model) => {
+                let ship_name = match self.ship_name.to_owned() {
+                    Some(name) => format!(" named _{}_", name),
+                    None => "".into(),
+                };
                 unsafe {
                     FAKEDB.push(Ship {
-                        model: model.name.to_owned(),
+                        model: model.id.to_owned(),
                         name: self.ship_name.clone(),
                     });
                 }
@@ -125,16 +117,12 @@ impl AddCommand {
                     },
                 ))
             }
-            None => Ok(InteractionResponse::ChannelMessageWithSource(
-                CallbackData {
-                    allowed_mentions: None,
-                    flags: None,
-                    tts: None,
-                    content: Some(format!("`{}` is not a valid ship model.", self.ship_model,)),
-                    embeds: Default::default(),
-                    components: Default::default(),
-                },
-            )),
+            Err(e) => {
+                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                    "Unable to find ship model in database: {}",
+                    &self.ship_model
+                )))
+            }
         }
     }
 }
@@ -286,7 +274,7 @@ impl AddCommandPartial {
 #[derive(Debug)]
 #[allow(dead_code)]
 struct Ship {
-    pub model: String,
+    pub model: Uuid,
     pub name: Option<String>,
 }
 

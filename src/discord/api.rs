@@ -2,7 +2,7 @@ use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
 use sqlx::PgPool;
 use twilight_model::application::{
-    callback::InteractionResponse,
+    callback::{CallbackData, InteractionResponse},
     interaction::{ApplicationCommand, Interaction},
 };
 
@@ -26,9 +26,19 @@ pub async fn discord_api(
         }
         Interaction::ApplicationCommand(c) => {
             // Run handler to get correct response
-            let response = application_command_handler(&c, &pool)
-                .await
-                .context("Problem running application command handler")?;
+            let response = application_command_handler(&c, &pool).await;
+            // .context("Problem running application command handler");
+
+            //TODO: If response is Err, log the error, send a pretty display to the user
+
+            let response = match response {
+                Ok(response) => response,
+                Err(e) => {
+                    tracing::error!("An error occurred: {:?}", e);
+                    format_user_error(e).await
+                }
+            };
+
             Ok(HttpResponse::Ok()
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
                 .json(response))
@@ -44,6 +54,20 @@ pub async fn discord_api(
         }
         _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
     }
+}
+
+async fn format_user_error(e: DiscordApiError) -> InteractionResponse {
+    InteractionResponse::ChannelMessageWithSource(CallbackData {
+        allowed_mentions: None,
+        flags: None,
+        tts: None,
+        content: Some(format!(
+            "There was an error processing your request: {:?}",
+            e
+        )),
+        embeds: Default::default(),
+        components: Default::default(),
+    })
 }
 
 #[tracing::instrument(name = "Handling ApplicationCommand", skip(cmd))]
@@ -84,6 +108,11 @@ pub enum DiscordApiError {
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
+// impl std::fmt::Display for DiscordApiError {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         f.write_fmt(format!("There as an error processing your request."))
+//     }
+// }
 impl std::fmt::Debug for DiscordApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)
