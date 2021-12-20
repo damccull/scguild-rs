@@ -232,21 +232,26 @@ impl AddCommandPartial {
         _cmd: &ApplicationCommand,
         pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
-        let mut choices = Vec::<CommandOptionChoice>::new();
-        for ship in database::all_ship_models(pool).await {}
-        MODELS
-            .iter()
-            .filter(|s| {
-                s.to_lowercase()
-                    .starts_with(self.ship_model.to_lowercase().as_str())
-            })
-            .map(|s| CommandOptionChoice::String {
-                name: s.to_string(),
-                value: s.to_string(),
-            })
-            .collect::<Vec<_>>()
-            .iter()
-            .for_each(|s| choices.push(s.clone()));
+        let user_query = self.ship_model.to_lowercase();
+        let choices = match database::all_ship_models(pool).await {
+            Ok(x) => x
+                .into_iter()
+                .filter(|s| s.name.to_lowercase().contains(&user_query))
+                .take(25)
+                .collect::<Vec<_>>()
+                .iter()
+                .map(|s| CommandOptionChoice::String {
+                    name: s.name.to_string(),
+                    value: s.id.to_string(),
+                })
+                .collect::<Vec<_>>(),
+            Err(e) => {
+                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                    "Error querying database: {:?}",
+                    e
+                )))
+            }
+        };
 
         Ok(InteractionResponse::Autocomplete(Autocomplete { choices }))
     }
