@@ -1,6 +1,7 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
 use sqlx::PgPool;
+use tracing_actix_web::RequestId;
 use twilight_model::application::{
     callback::{CallbackData, InteractionResponse},
     interaction::{ApplicationCommand, Interaction},
@@ -15,6 +16,7 @@ pub async fn discord_api(
     _req: HttpRequest,
     pool: web::Data<PgPool>,
     interaction: web::Json<Interaction>,
+    request_id: RequestId,
 ) -> Result<HttpResponse, DiscordApiError> {
     let interaction = interaction.into_inner();
     match interaction {
@@ -35,7 +37,7 @@ pub async fn discord_api(
                 Ok(response) => response,
                 Err(e) => {
                     tracing::error!("An error occurred: {:?}", e);
-                    format_user_error(e).await
+                    format_user_error(request_id).await
                 }
             };
 
@@ -56,14 +58,26 @@ pub async fn discord_api(
     }
 }
 
-async fn format_user_error(e: DiscordApiError) -> InteractionResponse {
+async fn format_user_error(request_id: RequestId) -> InteractionResponse {
+    let body = format!(
+        "Request ID: {}\n\n\
+        What were you doing when the error occurred? Please provide as much detail as possible, \
+        including the command you typed, if possible.\n",
+        request_id
+    );
+
+    let body = urlencoding::encode(&body);
+
     InteractionResponse::ChannelMessageWithSource(CallbackData {
         allowed_mentions: None,
         flags: None,
         tts: None,
         content: Some(format!(
-            "There was an error processing your request: {:?}",
-            e
+            "There was an error processing your request. \
+            If this happens repeatedly, \
+            [please open an issue on the github repo](<https://github.com/damccull/norseline-rs/issues/new?body={}>) \
+            with this request id: {}",
+            body, request_id
         )),
         embeds: Default::default(),
         components: Default::default(),
