@@ -117,7 +117,7 @@ impl AddCommand {
                     },
                 ))
             }
-            Err(e) => {
+            Err(_) => {
                 return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
                     "Unable to find ship model in database: {}",
                     &self.ship_model
