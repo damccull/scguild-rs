@@ -1,12 +1,9 @@
 mod models;
 
 use actix_web::ResponseError;
-use anyhow::Context;
 pub use models::*;
 use sqlx::PgPool;
 use uuid::Uuid;
-
-use std::str::FromStr;
 
 use crate::error_chain_fmt;
 
@@ -31,16 +28,7 @@ pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Er
 }
 
 #[tracing::instrument(name = "Database - Get Ship By ID")]
-pub async fn get_ship_by_id(pool: &PgPool, id: String) -> Result<ShipModel, DatabaseError> {
-    let id = match Uuid::from_str(&id) {
-        Ok(x) => x,
-        Err(e) => {
-            return Err(DatabaseError::UnexpectedError(anyhow::anyhow!(
-                "Unable to parse given string as UUID: {:?}",
-                e
-            )))
-        }
-    };
+pub async fn get_ship_by_id(pool: &PgPool, id: Uuid) -> Result<ShipModel, DatabaseError> {
     let record = sqlx::query!(
         r#"
         SELECT id, class_name, name, description
@@ -51,7 +39,10 @@ pub async fn get_ship_by_id(pool: &PgPool, id: String) -> Result<ShipModel, Data
     )
     .fetch_one(pool)
     .await
-    .context("Failed to execute query")?;
+    .map_err(|e| {
+        tracing::error!("No record found for {}: {}", id, e);
+        DatabaseError::RecordNotFoundError(id.to_string())
+    })?;
 
     Ok(ShipModel {
         id: record.id,
@@ -62,6 +53,8 @@ pub async fn get_ship_by_id(pool: &PgPool, id: String) -> Result<ShipModel, Data
 
 #[derive(thiserror::Error)]
 pub enum DatabaseError {
+    #[error("Record not found for: {0}")]
+    RecordNotFoundError(String),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -73,6 +66,7 @@ impl std::fmt::Debug for DatabaseError {
 impl ResponseError for DatabaseError {
     fn status_code(&self) -> actix_http::StatusCode {
         match self {
+            DatabaseError::RecordNotFoundError(_) => actix_http::StatusCode::NOT_FOUND,
             DatabaseError::UnexpectedError(_) => actix_http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

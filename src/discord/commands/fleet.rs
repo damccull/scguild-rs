@@ -1,8 +1,13 @@
-use crate::{database, discord::api::DiscordApiError};
+use std::str::FromStr;
+
+use crate::{
+    database,
+    discord::{api::DiscordApiError, format_simple_message_response},
+};
 use sqlx::PgPool;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
 use twilight_model::application::{
-    callback::{Autocomplete, CallbackData, InteractionResponse},
+    callback::{Autocomplete, InteractionResponse},
     command::CommandOptionChoice,
     interaction::ApplicationCommand,
 };
@@ -36,8 +41,8 @@ impl FleetCommand {
         let x: CommandInputData = cmd.data.clone().into();
         match FleetCommand::from_interaction(x) {
             Ok(subcommand) => match subcommand {
-                FleetCommand::Add(add_command) => add_command.handle(cmd, pool).await,
-                FleetCommand::List(_) => todo!(),
+                FleetCommand::Add(add_command) => add_command.handler(cmd, pool).await,
+                FleetCommand::List(list_command) => list_command.handler(cmd, pool).await,
                 FleetCommand::Remove(_) => todo!(),
                 FleetCommand::Rename(_) => todo!(),
                 FleetCommand::Show(show_command) => show_command.handle(cmd).await,
@@ -85,13 +90,22 @@ pub struct AddCommand {
 
 impl AddCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET ADD", skip(self))]
-    async fn handle(
+    async fn handler(
         &self,
         cmd: &ApplicationCommand,
         pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
-        dbg!(&self.ship_model);
-        match database::get_ship_by_id(pool, self.ship_model.to_owned()).await {
+        let ship_id = match Uuid::from_str(&self.ship_model.to_owned()) {
+            Ok(x) => x,
+            Err(e) => {
+                tracing::warn!("Unable to parse given string as UUID: {:?}", e);
+                return Ok(format_simple_message_response(&format!(
+                    "Unable to find ship model in database: {}",
+                    &self.ship_model
+                )));
+            }
+        };
+        match database::get_ship_by_id(pool, ship_id).await {
             Ok(model) => {
                 let ship_name = match self.ship_name.to_owned() {
                     Some(name) => format!(" named _{}_", name),
@@ -103,26 +117,28 @@ impl AddCommand {
                         name: self.ship_name.clone(),
                     });
                 }
-                Ok(InteractionResponse::ChannelMessageWithSource(
-                    CallbackData {
-                        allowed_mentions: None,
-                        flags: None,
-                        tts: None,
-                        content: Some(format!(
-                            "Adding a {}{} to the fleet.",
-                            model.name, ship_name
-                        )),
-                        embeds: Default::default(),
-                        components: Default::default(),
-                    },
-                ))
-            }
-            Err(_) => {
-                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
-                    "Unable to find ship model in database: {}",
-                    &self.ship_model
+                Ok(format_simple_message_response(&format!(
+                    "Adding a {}{} to the fleet.",
+                    model.name, ship_name
                 )))
             }
+            Err(e) => match e {
+                database::DatabaseError::RecordNotFoundError(_) => {
+                    tracing::warn!(
+                        "Unable to find ship model in database: {}",
+                        &self.ship_model
+                    );
+                    Ok(format_simple_message_response(&format!(
+                        "Unable to find ship model in database: {}",
+                        &self.ship_model
+                    )))
+                }
+                database::DatabaseError::UnexpectedError(_) => {
+                    return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                        "An unexpected error occurred looking for the ship model.",
+                    )))
+                }
+            },
         }
     }
 }
@@ -139,16 +155,13 @@ pub struct ListCommand {
 
 impl ListCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET")]
-    async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
-        Ok(InteractionResponse::ChannelMessageWithSource(
-            CallbackData {
-                allowed_mentions: None,
-                flags: None,
-                tts: None,
-                content: Some("Privately perusing the fleet.".into()),
-                embeds: Default::default(),
-                components: Default::default(),
-            },
+    async fn handler(
+        &self,
+        _cmd: &ApplicationCommand,
+        pool: &PgPool,
+    ) -> Result<InteractionResponse, DiscordApiError> {
+        Ok(format_simple_message_response(
+            "Privately perusing the fleet.",
         ))
     }
 }
@@ -160,15 +173,8 @@ pub struct RemoveCommand {}
 impl RemoveCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET")]
     async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
-        Ok(InteractionResponse::ChannelMessageWithSource(
-            CallbackData {
-                allowed_mentions: None,
-                flags: None,
-                tts: None,
-                content: Some("Removing a ship from the fleet.".into()),
-                embeds: Default::default(),
-                components: Default::default(),
-            },
+        Ok(format_simple_message_response(
+            "Removing a ship from the fleet.",
         ))
     }
 }
@@ -180,15 +186,8 @@ pub struct RenameCommand {}
 impl RenameCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET")]
     async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
-        Ok(InteractionResponse::ChannelMessageWithSource(
-            CallbackData {
-                allowed_mentions: None,
-                flags: None,
-                tts: None,
-                content: Some("Renaming a ship in the fleet.".into()),
-                embeds: Default::default(),
-                components: Default::default(),
-            },
+        Ok(format_simple_message_response(
+            "Renaming a ship in the fleet.",
         ))
     }
 }
@@ -207,16 +206,10 @@ impl ShowCommand {
         _cmd: &ApplicationCommand,
     ) -> Result<InteractionResponse, DiscordApiError> {
         unsafe {
-            Ok(InteractionResponse::ChannelMessageWithSource(
-                CallbackData {
-                    allowed_mentions: None,
-                    flags: None,
-                    tts: None,
-                    content: Some(format!("Showing off the fleet.\n```\n{:?}\n```", FAKEDB)),
-                    embeds: Default::default(),
-                    components: Default::default(),
-                },
-            ))
+            Ok(format_simple_message_response(&format!(
+                "Showing off the fleet.\n```\n{:?}\n```",
+                FAKEDB
+            )))
         }
     }
 }
