@@ -26,7 +26,7 @@ pub async fn discord_api(
         }
         Interaction::ApplicationCommand(c) => {
             // Run handler to get correct response
-            let response = application_command_handler(&c)
+            let response = application_command_handler(&c, &pool)
                 .await
                 .context("Problem running application command handler")?;
             Ok(HttpResponse::Ok()
@@ -49,9 +49,10 @@ pub async fn discord_api(
 #[tracing::instrument(name = "Handling ApplicationCommand", skip(cmd))]
 async fn application_command_handler(
     cmd: &ApplicationCommand,
+    pool: &PgPool,
 ) -> Result<InteractionResponse, DiscordApiError> {
     match cmd.data.name.as_ref() {
-        FleetCommand::NAME => FleetCommand::handler(cmd).await,
+        FleetCommand::NAME => FleetCommand::handler(cmd, pool).await,
         HelloCommand::NAME => HelloCommand::handler(cmd).await,
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
             "Invalid interaction data".to_string()

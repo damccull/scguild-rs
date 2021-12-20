@@ -1,5 +1,4 @@
-use std::str::FromStr;
-
+use crate::{database, discord::api::DiscordApiError};
 use sqlx::PgPool;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
 use twilight_model::application::{
@@ -7,9 +6,6 @@ use twilight_model::application::{
     command::CommandOptionChoice,
     interaction::ApplicationCommand,
 };
-use uuid::Uuid;
-
-use crate::{database, discord::api::DiscordApiError};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(CommandModel, CreateCommand, Debug)]
@@ -32,11 +28,14 @@ impl FleetCommand {
 
 impl FleetCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET", skip(cmd))]
-    pub async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    pub async fn handler(
+        cmd: &ApplicationCommand,
+        pool: &PgPool,
+    ) -> Result<InteractionResponse, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
         match FleetCommand::from_interaction(x) {
             Ok(subcommand) => match subcommand {
-                FleetCommand::Add(add_command) => add_command.handle(cmd).await,
+                FleetCommand::Add(add_command) => add_command.handle(cmd, pool).await,
                 FleetCommand::List(_) => todo!(),
                 FleetCommand::Remove(_) => todo!(),
                 FleetCommand::Rename(_) => todo!(),
@@ -88,8 +87,9 @@ impl AddCommand {
     async fn handle(
         &self,
         cmd: &ApplicationCommand,
+        pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
-        let ship_model = match Uuid::from_str(&self.ship_model) {
+        let model = match database::get_ship_by_id(pool, self.ship_model.to_owned()).await {
             Ok(x) => x,
             Err(e) => {
                 return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
@@ -98,32 +98,44 @@ impl AddCommand {
                 )))
             }
         };
-        //TODO: Database lookup by ID for the ship_model
         let ship_name = match self.ship_name.to_owned() {
             Some(name) => format!(" named _{}_", name),
             None => "".into(),
         };
 
-        unsafe {
-            FAKEDB.push(Ship {
-                model: ship_model.to_owned(),
-                name: self.ship_name.clone(),
-            });
+        match model {
+            Some(model) => {
+                unsafe {
+                    FAKEDB.push(Ship {
+                        model: model.name.to_owned(),
+                        name: self.ship_name.clone(),
+                    });
+                }
+                Ok(InteractionResponse::ChannelMessageWithSource(
+                    CallbackData {
+                        allowed_mentions: None,
+                        flags: None,
+                        tts: None,
+                        content: Some(format!(
+                            "Adding a {}{} to the fleet.",
+                            model.name, ship_name
+                        )),
+                        embeds: Default::default(),
+                        components: Default::default(),
+                    },
+                ))
+            }
+            None => Ok(InteractionResponse::ChannelMessageWithSource(
+                CallbackData {
+                    allowed_mentions: None,
+                    flags: None,
+                    tts: None,
+                    content: Some(format!("`{}` is not a valid ship model.", self.ship_model,)),
+                    embeds: Default::default(),
+                    components: Default::default(),
+                },
+            )),
         }
-
-        Ok(InteractionResponse::ChannelMessageWithSource(
-            CallbackData {
-                allowed_mentions: None,
-                flags: None,
-                tts: None,
-                content: Some(format!(
-                    "Adding a {}{} to the fleet.",
-                    ship_model, ship_name
-                )),
-                embeds: Default::default(),
-                components: Default::default(),
-            },
-        ))
     }
 }
 
