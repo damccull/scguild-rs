@@ -33,7 +33,7 @@ impl FleetCommand {
 }
 
 impl FleetCommand {
-    #[tracing::instrument(name = "Discord Interaction - FLEET", skip(cmd))]
+    #[tracing::instrument(name = "Discord Interaction - FLEET", skip(cmd, pool))]
     pub async fn handler(
         cmd: &ApplicationCommand,
         pool: &PgPool,
@@ -45,7 +45,7 @@ impl FleetCommand {
                 FleetCommand::List(list_command) => list_command.handler(cmd, pool).await,
                 FleetCommand::Remove(_) => todo!(),
                 FleetCommand::Rename(_) => todo!(),
-                FleetCommand::Show(show_command) => show_command.handle(cmd).await,
+                FleetCommand::Show(show_command) => show_command.handler(cmd, pool).await,
             },
             Err(e) => {
                 return Err(DiscordApiError::UnsupportedCommand(format!(
@@ -56,7 +56,7 @@ impl FleetCommand {
         }
     }
 
-    #[tracing::instrument(name = "Discord Interaction - FLEET ADD AUTOCOMPLETE", skip(cmd))]
+    #[tracing::instrument(name = "Discord Interaction - FLEET ADD AUTOCOMPLETE", skip(cmd, pool))]
     pub async fn autocomplete_handler(
         cmd: &ApplicationCommand,
         pool: &PgPool,
@@ -89,7 +89,7 @@ pub struct AddCommand {
 }
 
 impl AddCommand {
-    #[tracing::instrument(name = "Discord Interaction - FLEET ADD", skip(self))]
+    #[tracing::instrument(name = "Discord Interaction - FLEET ADD", skip(self, pool))]
     async fn handler(
         &self,
         cmd: &ApplicationCommand,
@@ -154,11 +154,11 @@ pub struct ListCommand {
 }
 
 impl ListCommand {
-    #[tracing::instrument(name = "Discord Interaction - FLEET")]
+    #[tracing::instrument(name = "Discord Interaction - FLEET LIST", skip(_pool))]
     async fn handler(
         &self,
         _cmd: &ApplicationCommand,
-        pool: &PgPool,
+        _pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
         Ok(format_simple_message_response(
             "Privately perusing the fleet.",
@@ -171,8 +171,11 @@ impl ListCommand {
 pub struct RemoveCommand {}
 
 impl RemoveCommand {
-    #[tracing::instrument(name = "Discord Interaction - FLEET")]
-    async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    #[tracing::instrument(name = "Discord Interaction - FLEET REMOVE", skip(_pool))]
+    async fn handler(
+        _cmd: &ApplicationCommand,
+        _pool: &PgPool,
+    ) -> Result<InteractionResponse, DiscordApiError> {
         Ok(format_simple_message_response(
             "Removing a ship from the fleet.",
         ))
@@ -184,8 +187,11 @@ impl RemoveCommand {
 pub struct RenameCommand {}
 
 impl RenameCommand {
-    #[tracing::instrument(name = "Discord Interaction - FLEET")]
-    async fn handler(_cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    #[tracing::instrument(name = "Discord Interaction - FLEET RENAME", skip(_pool))]
+    async fn handler(
+        _cmd: &ApplicationCommand,
+        _pool: &PgPool,
+    ) -> Result<InteractionResponse, DiscordApiError> {
         Ok(format_simple_message_response(
             "Renaming a ship in the fleet.",
         ))
@@ -200,10 +206,11 @@ pub struct ShowCommand {
 }
 
 impl ShowCommand {
-    #[tracing::instrument(name = "Discord Interaction - FLEET SHOW")]
-    async fn handle(
+    #[tracing::instrument(name = "Discord Interaction - FLEET SHOW", skip(_pool))]
+    async fn handler(
         &self,
         _cmd: &ApplicationCommand,
+        _pool: &PgPool,
     ) -> Result<InteractionResponse, DiscordApiError> {
         unsafe {
             Ok(format_simple_message_response(&format!(
@@ -232,7 +239,7 @@ pub struct AddCommandPartial {
 }
 
 impl AddCommandPartial {
-    #[tracing::instrument(name = "Discord Autocomplete Handler - AddCommandPartial")]
+    #[tracing::instrument(name = "Discord Autocomplete Handler - AddCommandPartial", skip(pool))]
     async fn handle(
         &self,
         _cmd: &ApplicationCommand,

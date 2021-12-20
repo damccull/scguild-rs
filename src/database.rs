@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::error_chain_fmt;
 
-#[tracing::instrument(name = "Database - Get All Ship Models")]
+#[tracing::instrument(name = "Database - Get All Ship Models", skip(pool))]
 pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Error> {
     Ok(sqlx::query!(
         r#"
@@ -27,7 +27,7 @@ pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Er
     .collect::<Vec<_>>())
 }
 
-#[tracing::instrument(name = "Database - Get Ship By ID")]
+#[tracing::instrument(name = "Database - Get Ship By ID", skip(pool))]
 pub async fn get_ship_by_id(pool: &PgPool, id: Uuid) -> Result<ShipModel, DatabaseError> {
     let record = sqlx::query!(
         r#"

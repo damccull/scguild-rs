@@ -84,7 +84,7 @@ async fn format_user_error(request_id: RequestId) -> InteractionResponse {
     })
 }
 
-#[tracing::instrument(name = "Handling ApplicationCommand", skip(cmd))]
+#[tracing::instrument(name = "Handling ApplicationCommand", skip(cmd, pool))]
 async fn application_command_handler(
     cmd: &ApplicationCommand,
     pool: &PgPool,
@@ -98,7 +98,7 @@ async fn application_command_handler(
     }
 }
 
-#[tracing::instrument(name = "Handling ApplicationCommandAutocomplete", skip(cmd))]
+#[tracing::instrument(name = "Handling ApplicationCommandAutocomplete", skip(cmd, pool))]
 async fn application_command_autocomplete_handler(
     cmd: &ApplicationCommand,
     pool: &PgPool,
