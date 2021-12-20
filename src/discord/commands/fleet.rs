@@ -266,5 +266,3 @@ struct Ship {
 }
 
 static mut FAKEDB: Vec<Ship> = Vec::new();
-
-static MODELS: [&str; 4] = ["Aurora", "Carrack", "Mustang", "Freelancer MAX"];
