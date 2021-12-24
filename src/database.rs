@@ -1,8 +1,9 @@
 mod models;
 
 use actix_web::ResponseError;
+use anyhow::Context;
 pub use models::*;
-use sqlx::PgPool;
+use sqlx::{Executor, PgPool};
 use uuid::Uuid;
 
 use crate::error_chain_fmt;
@@ -49,6 +50,27 @@ pub async fn get_ship_by_id(pool: &PgPool, id: Uuid) -> Result<ShipModel, Databa
         name: record.name,
         description: record.description,
     })
+}
+
+pub async fn insert_user(pool: &PgPool, user: User) -> Result<Uuid, DatabaseError> {
+    let mut transaction = pool
+        .begin()
+        .await
+        .context("Failed to get a Postgres connection from the pool.")?;
+
+    let response = sqlx::query!(
+        r#"
+        INSERT INTO users (id, discord_id)
+        VALUES ($1, $2)
+        "#,
+        user.id,
+        user.discord_id,
+    )
+    .execute(&mut transaction)
+    .await
+    .context("tesT")?;
+
+    Ok(user.id)
 }
 
 #[derive(thiserror::Error)]

@@ -200,10 +200,7 @@ impl RenameCommand {
 
 #[derive(CommandModel, CreateCommand, Debug)]
 #[command(name = "show", desc = "Show your fleet to the channel.")]
-pub struct ShowCommand {
-    /// This is a dummy option. Set it true or false. It's just here temporarily due to a bug.
-    _dummy: bool,
-}
+pub struct ShowCommand;
 
 impl ShowCommand {
     #[tracing::instrument(name = "Discord Interaction - FLEET SHOW", skip(_pool))]

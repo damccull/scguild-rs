@@ -1,7 +1,12 @@
+use std::{convert::TryFrom, num::NonZeroU64};
+
 use twilight_interactions::command::CreateCommand;
-use twilight_model::application::{
-    callback::{CallbackData, InteractionResponse},
-    command::Command,
+use twilight_model::{
+    application::{
+        callback::{CallbackData, InteractionResponse},
+        command::Command,
+    },
+    id::UserId,
 };
 
 use crate::discord::commands::{FleetCommand, HelloCommand};
@@ -27,4 +32,26 @@ pub fn format_simple_message_response(message: &str) -> InteractionResponse {
         embeds: Default::default(),
         components: Default::default(),
     })
+}
+
+pub struct DiscordUserId(NonZeroU64);
+impl TryFrom<i64> for DiscordUserId {
+    type Error = anyhow::Error;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        match NonZeroU64::new(x as i64) {
+            Ok(x) => Self { 0: x },
+            Err()
+        }
+    }
+}
+impl From<UserId> for DiscordUserId {
+    fn from(x: UserId) -> Self {
+        Self { 0: x.0 }
+    }
+}
+impl Into<UserId> for DiscordUserId {
+    fn into(self) -> UserId {
+        UserId { 0: self.0 }
+    }
 }

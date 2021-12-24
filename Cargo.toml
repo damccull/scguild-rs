@@ -58,7 +58,7 @@ tracing-subscriber = { version = "0.2.12", features = [
 thiserror = "1.0.30"
 mime = "0.3.16"
 async-trait = "0.1.52"
-twilight-interactions = "0.8"
+twilight-interactions = "0.8.1"
 urlencoding = "2.1.0"
 
 
