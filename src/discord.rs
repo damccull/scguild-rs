@@ -1,5 +1,6 @@
 use std::{convert::TryFrom, num::NonZeroU64};
 
+use serde::{Serialize, Deserialize};
 use twilight_interactions::command::CreateCommand;
 use twilight_model::{
     application::{
@@ -34,14 +35,15 @@ pub fn format_simple_message_response(message: &str) -> InteractionResponse {
     })
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DiscordUserId(NonZeroU64);
 impl TryFrom<i64> for DiscordUserId {
     type Error = anyhow::Error;
 
     fn try_from(value: i64) -> Result<Self, Self::Error> {
-        match NonZeroU64::new(x as i64) {
-            Ok(x) => Self { 0: x },
-            Err()
+        match NonZeroU64::new(value as u64) {
+            Some(x) => Ok(Self { 0: x }),
+            None => Err(anyhow::anyhow!("Unable to parse user id."))
         }
     }
 }
