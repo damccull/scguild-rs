@@ -76,3 +76,15 @@ impl Into<UserId> for DiscordUserId {
         UserId { 0: self.0 }
     }
 }
+
+// https://discord.com/channels/665528275556106240/694697474689859614/923193721175035945
+
+// impl sqlx::Type<sqlx::Postgres> for FoobarID {
+//     fn type_info() -> sqlx::postgres::PgTypeInfo {
+//         <i64 as sqlx::Type<sqlx::Postgres>>::type_info()
+//     }
+
+//     fn compatible(ty: &sqlx::postgres::PgTypeInfo) -> bool {
+//         <i64 as sqlx::Type<sqlx::Postgres>>::compatible(ty)
+//     }
+// }
