@@ -1,6 +1,6 @@
-use std::{convert::TryFrom, num::NonZeroU64};
+use std::{convert::TryFrom, fmt::Display, num::NonZeroU64};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use twilight_interactions::command::CreateCommand;
 use twilight_model::{
     application::{
@@ -35,15 +35,34 @@ pub fn format_simple_message_response(message: &str) -> InteractionResponse {
     })
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, sqlx::Type)]
 pub struct DiscordUserId(NonZeroU64);
+impl Display for DiscordUserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.to_string())
+    }
+}
 impl TryFrom<i64> for DiscordUserId {
     type Error = anyhow::Error;
 
     fn try_from(value: i64) -> Result<Self, Self::Error> {
         match NonZeroU64::new(value as u64) {
             Some(x) => Ok(Self { 0: x }),
-            None => Err(anyhow::anyhow!("Unable to parse user id."))
+            None => Err(anyhow::anyhow!("Unable to parse user id.")),
+        }
+    }
+}
+impl TryFrom<&str> for DiscordUserId {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let i = match value.parse::<u64>() {
+            Ok(x) => x,
+            Err(_) => return Err(anyhow::anyhow!("Unable to parse user id.")),
+        };
+        match NonZeroU64::new(i) {
+            Some(x) => Ok(Self { 0: x }),
+            None => Err(anyhow::anyhow!("Unable to parse user id.")),
         }
     }
 }
