@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::discord::DiscordUserId;
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct User {
     pub id: Uuid,
-    pub discord_id: Option<DiscordUserId>,
+    //pub discord_id: Option<DiscordUserId>,
+    pub discord_id: Option<String>,
 }
 impl User {
     pub fn new() -> Self {
