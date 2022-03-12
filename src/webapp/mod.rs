@@ -1,5 +1,2 @@
-mod api;
-mod health_check;
-
-pub use api::api;
-pub use health_check::health_check;
+pub mod api;
+pub mod health_check;

@@ -1,4 +1,8 @@
-use actix_web::{HttpRequest, Responder};
+use actix_web::{web, HttpRequest, Responder};
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::scope("/api").route("/v1/{interaction}", web::get().to(api)));
+}
 
 pub async fn api(req: HttpRequest) -> impl Responder {
     let interaction = req

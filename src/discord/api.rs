@@ -1,5 +1,6 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
+use ed25519_dalek::PublicKey;
 use sqlx::PgPool;
 use tracing_actix_web::RequestId;
 use twilight_model::application::{
@@ -7,9 +8,27 @@ use twilight_model::application::{
     interaction::{ApplicationCommand, Interaction},
 };
 
-use crate::error_chain_fmt;
+use crate::{error_chain_fmt, middleware::ed25519_signatures};
 
 use super::commands::{FleetCommand, HelloCommand};
+
+/// Configures actix_web routes.
+/// Example:
+/// ```rust
+/// let pubkey = read_public_key_from_config();
+/// App::new().configure(discord::api::configure(pubkey));
+/// ```
+pub fn configure(discord_public_key: PublicKey) -> impl Fn(&mut web::ServiceConfig) {
+    move |cnfg| {
+        cnfg.service(
+            web::resource("/discord")
+                .wrap(ed25519_signatures::VerifyEd25519Signature::new(
+                    discord_public_key,
+                ))
+                .route(web::post().to(discord_api)),
+        );
+    }
+}
 
 #[tracing::instrument(name = "Calling Discord API", skip(_req, interaction))]
 pub async fn discord_api(

@@ -1,11 +1,7 @@
 use std::{net::TcpListener, sync::Arc};
 
 use actix_cors::Cors;
-use actix_web::{
-    dev::Server,
-    web::{self, Data},
-    App, HttpServer,
-};
+use actix_web::{dev::Server, web::Data, App, HttpServer};
 use anyhow::Context;
 use reqwest::header;
 use serde::Deserialize;
@@ -18,9 +14,7 @@ use twilight_model::id::{ApplicationId, GuildId};
 
 use crate::{
     configuration::{DatabaseSettings, DiscordSettings, Settings},
-    discord::{self, api::discord_api},
-    middleware::ed25519_signatures,
-    webapp::{api, health_check},
+    discord, webapp,
 };
 
 pub struct Application {
@@ -169,18 +163,9 @@ fn run(
                     .max_age(3600),
             )
             .wrap(TracingLogger::default())
-            .route("/health_check", web::get().to(health_check))
-            .service(
-                web::scope("/api")
-                    .service(
-                        web::resource("/discord")
-                            .wrap(ed25519_signatures::VerifyEd25519Signature::new(
-                                discord_public_key,
-                            ))
-                            .route(web::post().to(discord_api)),
-                    )
-                    .route("/v1/{interaction}", web::get().to(api)),
-            )
+            .configure(webapp::health_check::configure)
+            .configure(discord::api::configure(discord_public_key))
+            .configure(webapp::api::configure)
             .app_data(base_url.clone())
             .app_data(db_pool.clone())
     })
