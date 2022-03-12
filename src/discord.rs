@@ -39,7 +39,7 @@ pub fn format_simple_message_response(message: &str) -> InteractionResponse {
 pub struct DiscordUserId(NonZeroU64);
 impl Display for DiscordUserId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0.to_string())
+        write!(f, "{}", self.0)
     }
 }
 impl TryFrom<i64> for DiscordUserId {
@@ -47,7 +47,7 @@ impl TryFrom<i64> for DiscordUserId {
 
     fn try_from(value: i64) -> Result<Self, Self::Error> {
         match NonZeroU64::new(value as u64) {
-            Some(x) => Ok(Self { 0: x }),
+            Some(x) => Ok(Self(x)),
             None => Err(anyhow::anyhow!("Unable to parse user id.")),
         }
     }
@@ -61,19 +61,21 @@ impl TryFrom<&str> for DiscordUserId {
             Err(_) => return Err(anyhow::anyhow!("Unable to parse user id.")),
         };
         match NonZeroU64::new(i) {
-            Some(x) => Ok(Self { 0: x }),
+            Some(x) => Ok(Self(x)),
             None => Err(anyhow::anyhow!("Unable to parse user id.")),
         }
     }
 }
 impl From<UserId> for DiscordUserId {
     fn from(x: UserId) -> Self {
-        Self { 0: x.0 }
+        Self(x.0)
     }
 }
+
+#[allow(clippy::from_over_into)]
 impl Into<UserId> for DiscordUserId {
     fn into(self) -> UserId {
-        UserId { 0: self.0 }
+        UserId(self.0)
     }
 }
 

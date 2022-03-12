@@ -10,6 +10,11 @@ pub struct User {
 }
 impl User {
     pub fn new() -> Self {
+        Self::default()
+    }
+}
+impl Default for User {
+    fn default() -> Self {
         Self {
             id: Uuid::new_v4(),
             discord_id: None,

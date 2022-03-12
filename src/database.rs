@@ -3,7 +3,7 @@ mod models;
 use actix_web::ResponseError;
 use anyhow::Context;
 pub use models::*;
-use sqlx::{Executor, PgPool};
+use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error_chain_fmt;
@@ -58,7 +58,7 @@ pub async fn insert_user(pool: &PgPool, user: User) -> Result<Uuid, DatabaseErro
         .await
         .context("Failed to get a Postgres connection from the pool.")?;
 
-    let response = sqlx::query!(
+    let _response = sqlx::query!(
         r#"
         INSERT INTO users (id, discord_id)
         VALUES ($1, $2)
