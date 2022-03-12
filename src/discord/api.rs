@@ -14,10 +14,10 @@ use super::commands::{FleetCommand, HelloCommand};
 
 /// Configures actix_web routes.
 /// Example:
-/// ```rust
-/// let pubkey = read_public_key_from_config();
-/// App::new().configure(discord::api::configure(pubkey));
-/// ```
+// / ```rust
+// / let pubkey = read_public_key_from_config();
+// / App::new().configure(discord::api::configure(pubkey));
+// / ```
 pub fn configure(discord_public_key: PublicKey) -> impl Fn(&mut web::ServiceConfig) {
     move |cnfg| {
         cnfg.service(
