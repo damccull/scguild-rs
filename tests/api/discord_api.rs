@@ -17,12 +17,8 @@ async fn discord_api_responds_with_pong_when_given_ping() {
     let keypair = test_app.discord_keypair;
 
     let body = interaction::Ping {
-        application_id: ApplicationId {
-            0: NonZeroU64::new(12351532).unwrap(),
-        },
-        id: InteractionId {
-            0: NonZeroU64::new(684641).unwrap(),
-        },
+        application_id: ApplicationId(NonZeroU64::new(12351532).unwrap()),
+        id: InteractionId(NonZeroU64::new(684641).unwrap()),
         kind: InteractionType::Ping,
         token: "blart".to_string(),
     };
@@ -30,7 +26,7 @@ async fn discord_api_responds_with_pong_when_given_ping() {
     let x = serde_json::to_string(&body).unwrap();
 
     let timestamp = Utc::now().to_string();
-    let signme = format!("{}{}", timestamp.to_string(), x);
+    let signme = format!("{}{}", timestamp, x);
     let signature = keypair.sign(signme.as_bytes());
 
     // Act
