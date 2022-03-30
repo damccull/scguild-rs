@@ -1,5 +1,3 @@
-use std::num::NonZeroU64;
-
 use crate::helpers::TestApp;
 use actix_http::StatusCode;
 use chrono::Utc;
@@ -7,7 +5,10 @@ use ed25519_dalek::Signer;
 use serde::Deserialize;
 use twilight_model::{
     application::interaction::{self, InteractionType},
-    id::{ApplicationId, InteractionId},
+    id::{
+        marker::{ApplicationMarker, InteractionMarker},
+        Id,
+    },
 };
 
 #[actix_rt::test]
@@ -17,8 +18,8 @@ async fn discord_api_responds_with_pong_when_given_ping() {
     let keypair = test_app.discord_keypair;
 
     let body = interaction::Ping {
-        application_id: ApplicationId(NonZeroU64::new(12351532).unwrap()),
-        id: InteractionId(NonZeroU64::new(684641).unwrap()),
+        application_id: Id::<ApplicationMarker>::new(12351532),
+        id: Id::<InteractionMarker>::new(684641),
         kind: InteractionType::Ping,
         token: "blart".to_string(),
     };

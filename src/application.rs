@@ -10,7 +10,7 @@ use tracing_actix_web::TracingLogger;
 
 use ed25519_dalek::PublicKey;
 use twilight_http::Client as HttpClient;
-use twilight_model::id::{ApplicationId, GuildId};
+use twilight_model::id::{marker::GuildMarker, ApplicationId, GuildId, Id};
 
 use crate::{
     configuration::{DatabaseSettings, DiscordSettings, Settings},
@@ -116,19 +116,37 @@ impl Application {
             client_credential.access_token
         )));
 
-        http.set_application_id(ApplicationId::new(self.discord_settings.application_id).unwrap());
+        tracing::debug!("Getting application_id");
+        let application_id = http
+            .current_user_application()
+            .exec()
+            .await?
+            .model()
+            .await?
+            .id;
 
-        // // http.set_global_commands(&discord_commands::commands())?
-        // //     .exec()
-        // //     .await?;
+        tracing::debug!("Setting test guild ID.");
+        let guild_id = Id::<GuildMarker>::new(self.discord_settings.guild_id);
+
         tracing::debug!("Setting guild commands.");
-        http.set_guild_commands(
-            GuildId::new(self.discord_settings.guild_id).unwrap(),
-            &discord::commands(),
-        )?
-        .exec()
-        .await?;
+        http.interaction(application_id)
+            .set_guild_commands(guild_id, &discord::commands())
+            .exec()
+            .await?;
+
         tracing::info!("Guild commands registered.");
+
+        // http.set_application_id(ApplicationId::new(self.discord_settings.application_id).unwrap());
+
+        // // // http.set_global_commands(&discord_commands::commands())?
+        // // //     .exec()
+        // // //     .await?;
+        // http.set_guild_commands(
+        //     GuildId::new(self.discord_settings.guild_id).unwrap(),
+        //     &discord::commands(),
+        // )?
+        // .exec()
+        // .await?;
 
         // REMOVE COMMANDS
         // http.set_global_commands(&[])?.exec().await?;

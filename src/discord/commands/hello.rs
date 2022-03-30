@@ -1,8 +1,8 @@
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
-use twilight_model::application::{
-    callback::{CallbackData, InteractionResponse},
-    interaction::ApplicationCommand,
+use twilight_model::{
+    application::interaction::ApplicationCommand, http::interaction::InteractionResponseData,
 };
+use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::discord::api::DiscordApiError;
 
@@ -36,7 +36,9 @@ impl HelloCommand {
 
 impl HelloCommand {
     #[tracing::instrument(name = "Discord Interaction - HELLO")]
-    pub async fn handler(cmd: &ApplicationCommand) -> Result<InteractionResponse, DiscordApiError> {
+    pub async fn handler(
+        cmd: &ApplicationCommand,
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         {
             let x: CommandInputData = cmd.data.clone().into();
             match HelloCommand::from_interaction(x) {
@@ -93,16 +95,20 @@ impl HelloCommand {
                             format!("{} waves{}.", sender_nick, target_nick)
                         }
                     };
-                    Ok(InteractionResponse::ChannelMessageWithSource(
-                        CallbackData {
-                            allowed_mentions: None,
-                            flags: None,
-                            tts: None,
-                            content: Some(message),
-                            embeds: Default::default(),
-                            components: Default::default(),
-                        },
-                    ))
+                    let response = InteractionResponseDataBuilder::new()
+                        .content(message)
+                        .build();
+                    Ok(response)
+                    // Ok(InteractionResponse::ChannelMessageWithSource(
+                    //     CallbackData {
+                    //         allowed_mentions: None,
+                    //         flags: None,
+                    //         tts: None,
+                    //         content: Some(message),
+                    //         embeds: Default::default(),
+                    //         components: Default::default(),
+                    //     },
+                    // ))
                 }
                 Err(e) => {
                     return Err(DiscordApiError::UnsupportedCommand(format!(
@@ -117,7 +123,7 @@ impl HelloCommand {
     #[tracing::instrument(name = "Discord Interaction - HELLO AUTOCOMPLETE")]
     async fn autocomplete_handler(
         _cmd: &ApplicationCommand,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         Err(DiscordApiError::AutocompleteUnsupported)
     }
 }

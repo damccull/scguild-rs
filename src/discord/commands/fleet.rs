@@ -6,11 +6,10 @@ use crate::{
 };
 use sqlx::PgPool;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
-use twilight_model::application::{
-    callback::{Autocomplete, InteractionResponse},
+use twilight_model::{application::{
     command::CommandOptionChoice,
     interaction::ApplicationCommand,
-};
+}, http::interaction::InteractionResponseData};
 use uuid::Uuid;
 
 #[allow(clippy::large_enum_variant)]
@@ -37,7 +36,7 @@ impl FleetCommand {
     pub async fn handler(
         cmd: &ApplicationCommand,
         pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
         match FleetCommand::from_interaction(x) {
             Ok(subcommand) => match subcommand {
@@ -60,12 +59,12 @@ impl FleetCommand {
     pub async fn autocomplete_handler(
         cmd: &ApplicationCommand,
         pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
         match FleetCommandPartial::from_interaction(x) {
             Ok(subcommand) => match subcommand {
-                FleetCommandPartial::Add(add_command) => add_command.handle(cmd, pool).await,
-                // _ => return Err(DiscordApiError::AutocompleteUnsupported),
+                //FleetCommandPartial::Add(add_command) => add_command.handle(cmd, pool).await,
+                _ => return Err(DiscordApiError::AutocompleteUnsupported),
             },
             Err(e) => {
                 return Err(DiscordApiError::UnsupportedCommand(format!(
@@ -94,7 +93,7 @@ impl AddCommand {
         &self,
         cmd: &ApplicationCommand,
         pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         let ship_id = match Uuid::from_str(&self.ship_model.to_owned()) {
             Ok(x) => x,
             Err(e) => {
@@ -159,7 +158,7 @@ impl ListCommand {
         &self,
         _cmd: &ApplicationCommand,
         _pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         Ok(format_simple_message_response(
             "Privately perusing the fleet.",
         ))
@@ -175,7 +174,7 @@ impl RemoveCommand {
     async fn handler(
         _cmd: &ApplicationCommand,
         _pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         Ok(format_simple_message_response(
             "Removing a ship from the fleet.",
         ))
@@ -191,7 +190,7 @@ impl RenameCommand {
     async fn handler(
         _cmd: &ApplicationCommand,
         _pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         Ok(format_simple_message_response(
             "Renaming a ship in the fleet.",
         ))
@@ -208,7 +207,7 @@ impl ShowCommand {
         &self,
         _cmd: &ApplicationCommand,
         _pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
+    ) -> Result<InteractionResponseData, DiscordApiError> {
         unsafe {
             Ok(format_simple_message_response(&format!(
                 "Showing off the fleet.\n```\n{:?}\n```",
@@ -235,37 +234,38 @@ pub struct AddCommandPartial {
     pub ship_model: String,
 }
 
-impl AddCommandPartial {
-    #[tracing::instrument(name = "Discord Autocomplete Handler - AddCommandPartial", skip(pool))]
-    async fn handle(
-        &self,
-        _cmd: &ApplicationCommand,
-        pool: &PgPool,
-    ) -> Result<InteractionResponse, DiscordApiError> {
-        let user_query = self.ship_model.to_lowercase();
-        let choices = match database::all_ship_models(pool).await {
-            Ok(x) => x
-                .into_iter()
-                .filter(|s| s.name.to_lowercase().contains(&user_query))
-                .take(25)
-                .collect::<Vec<_>>()
-                .iter()
-                .map(|s| CommandOptionChoice::String {
-                    name: s.name.to_string(),
-                    value: s.id.to_string(),
-                })
-                .collect::<Vec<_>>(),
-            Err(e) => {
-                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
-                    "Error querying database: {:?}",
-                    e
-                )))
-            }
-        };
+//TODO: REENABLE
+// impl AddCommandPartial {
+//     #[tracing::instrument(name = "Discord Autocomplete Handler - AddCommandPartial", skip(pool))]
+//     async fn handle(
+//         &self,
+//         _cmd: &ApplicationCommand,
+//         pool: &PgPool,
+//     ) -> Result<InteractionResponseData, DiscordApiError> {
+//         let user_query = self.ship_model.to_lowercase();
+//         let choices = match database::all_ship_models(pool).await {
+//             Ok(x) => x
+//                 .into_iter()
+//                 .filter(|s| s.name.to_lowercase().contains(&user_query))
+//                 .take(25)
+//                 .collect::<Vec<_>>()
+//                 .iter()
+//                 .map(|s| CommandOptionChoice::String {
+//                     name: s.name.to_string(),
+//                     value: s.id.to_string(),
+//                 })
+//                 .collect::<Vec<_>>(),
+//             Err(e) => {
+//                 return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+//                     "Error querying database: {:?}",
+//                     e
+//                 )))
+//             }
+//         };
 
-        Ok(InteractionResponse::Autocomplete(Autocomplete { choices }))
-    }
-}
+//         Ok(InteractionResponse::Autocomplete(Autocomplete { choices }))
+//     }
+// }
 
 //TODO: Get rid of this when testing is done and a real database is in use
 #[derive(Debug)]

@@ -6,8 +6,9 @@ use twilight_model::{
     application::{
         command::Command,
     },
-    http::interaction::InteractionResponse,
+    http::interaction::{InteractionResponse, InteractionResponseData},
 };
+use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::discord::commands::{FleetCommand, HelloCommand};
 
@@ -23,16 +24,17 @@ pub fn commands() -> Vec<Command> {
     ]
 }
 
-// pub fn format_simple_message_response(message: &str) -> InteractionResponse {
-//     InteractionResponse::ChannelMessageWithSource(CallbackData {
-//         allowed_mentions: None,
-//         flags: None,
-//         tts: None,
-//         content: Some(message.to_string()),
-//         embeds: Default::default(),
-//         components: Default::default(),
-//     })
-// }
+pub fn format_simple_message_response(message: &str) -> InteractionResponseData {
+    InteractionResponseDataBuilder::new().content(message.to_string()).build()
+    // InteractionResponse::ChannelMessageWithSource(CallbackData {
+    //     allowed_mentions: None,
+    //     flags: None,
+    //     tts: None,
+    //     content: Some(message.to_string()),
+    //     embeds: Default::default(),
+    //     components: Default::default(),
+    // })
+}
 
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
