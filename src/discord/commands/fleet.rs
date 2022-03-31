@@ -6,10 +6,9 @@ use crate::{
 };
 use sqlx::PgPool;
 use twilight_interactions::command::{CommandInputData, CommandModel, CreateCommand, ResolvedUser};
-use twilight_model::{application::{
-    command::CommandOptionChoice,
-    interaction::ApplicationCommand,
-}, http::interaction::InteractionResponseData};
+use twilight_model::{
+    application::interaction::ApplicationCommand, http::interaction::InteractionResponseData,
+};
 use uuid::Uuid;
 
 #[allow(clippy::large_enum_variant)]
@@ -55,16 +54,19 @@ impl FleetCommand {
         }
     }
 
-    #[tracing::instrument(name = "Discord Interaction - FLEET ADD AUTOCOMPLETE", skip(cmd, pool))]
+    #[tracing::instrument(
+        name = "Discord Interaction - FLEET ADD AUTOCOMPLETE",
+        skip(cmd, _pool)
+    )]
     pub async fn autocomplete_handler(
         cmd: &ApplicationCommand,
-        pool: &PgPool,
+        _pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
         let x: CommandInputData = cmd.data.clone().into();
         match FleetCommandPartial::from_interaction(x) {
             Ok(subcommand) => match subcommand {
                 //FleetCommandPartial::Add(add_command) => add_command.handle(cmd, pool).await,
-                _ => return Err(DiscordApiError::AutocompleteUnsupported),
+                _ => Err(DiscordApiError::AutocompleteUnsupported),
             },
             Err(e) => {
                 return Err(DiscordApiError::UnsupportedCommand(format!(

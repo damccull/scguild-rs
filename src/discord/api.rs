@@ -1,11 +1,11 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
-use anyhow::Context;
+
 use ed25519_dalek::PublicKey;
 use sqlx::PgPool;
 use tracing_actix_web::RequestId;
 use twilight_model::{
     application::interaction::{ApplicationCommand, Interaction},
-    http::interaction::{InteractionResponse, InteractionResponseData, InteractionResponseType},
+    http::interaction::{InteractionResponseData, InteractionResponseType},
 };
 use twilight_util::builder::InteractionResponseDataBuilder;
 

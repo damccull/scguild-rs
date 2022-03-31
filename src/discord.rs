@@ -1,13 +1,8 @@
-use std::{convert::{TryFrom, TryInto}, fmt::Display, num::NonZeroU64};
+use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 use twilight_interactions::command::CreateCommand;
-use twilight_model::{
-    application::{
-        command::Command,
-    },
-    http::interaction::{InteractionResponse, InteractionResponseData},
-};
+use twilight_model::{application::command::Command, http::interaction::InteractionResponseData};
 use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::discord::commands::{FleetCommand, HelloCommand};
@@ -25,7 +20,9 @@ pub fn commands() -> Vec<Command> {
 }
 
 pub fn format_simple_message_response(message: &str) -> InteractionResponseData {
-    InteractionResponseDataBuilder::new().content(message.to_string()).build()
+    InteractionResponseDataBuilder::new()
+        .content(message.to_string())
+        .build()
     // InteractionResponse::ChannelMessageWithSource(CallbackData {
     //     allowed_mentions: None,
     //     flags: None,
@@ -36,7 +33,6 @@ pub fn format_simple_message_response(message: &str) -> InteractionResponseData 
     // })
 }
 
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DiscordId<T>(T);
 impl<T: Display> Display for DiscordId<T> {
@@ -44,8 +40,6 @@ impl<T: Display> Display for DiscordId<T> {
         write!(f, "{}", self.0)
     }
 }
-
-
 
 // #[derive(Clone, Debug, Deserialize, Serialize)]
 // pub struct DiscordUserId(i64);
