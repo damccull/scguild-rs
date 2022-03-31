@@ -92,23 +92,6 @@ impl Application {
 
         tracing::info!("Guild commands registered.");
 
-        // http.set_application_id(ApplicationId::new(self.discord_settings.application_id).unwrap());
-
-        // // // http.set_global_commands(&discord_commands::commands())?
-        // // //     .exec()
-        // // //     .await?;
-        // http.set_guild_commands(
-        //     GuildId::new(self.discord_settings.guild_id).unwrap(),
-        //     &discord::commands(),
-        // )?
-        // .exec()
-        // .await?;
-
-        // REMOVE COMMANDS
-        // http.set_global_commands(&[])?.exec().await?;
-        // http.set_guild_commands(GuildId::new(745809834183753828).unwrap(), &[])?
-        //     .exec()
-        //     .await?;
         Ok(())
     }
 
@@ -118,12 +101,6 @@ impl Application {
         struct ClientCredential {
             #[serde(rename = "access_token")]
             pub access_token: String,
-            #[serde(rename = "expires_in")]
-            pub _expires_in: u64,
-            #[serde(rename = "scope")]
-            pub _scope: String,
-            #[serde(rename = "token_type")]
-            pub _token_type: String,
         }
         let reqwestclient = reqwest::Client::new();
 
@@ -151,15 +128,12 @@ impl Application {
             .await
             .context("Error requesting client credential from Discord API")?;
 
-        tracing::debug!("Deserializing client credential.");
-
         let client_credential = client_credential
             .json::<ClientCredential>()
             .await
             .context("Error deserializing client credential")?;
 
         tracing::debug!("Client credential is valid.");
-        tracing::debug!("Access token is {}", &client_credential.access_token);
         Ok(client_credential.access_token)
     }
 }
