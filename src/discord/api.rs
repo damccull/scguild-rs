@@ -5,7 +5,7 @@ use sqlx::PgPool;
 use tracing_actix_web::RequestId;
 use twilight_model::{
     application::interaction::{ApplicationCommand, Interaction},
-    http::interaction::{InteractionResponseData, InteractionResponseType},
+    http::interaction::{InteractionResponse, InteractionResponseData, InteractionResponseType},
 };
 use twilight_util::builder::InteractionResponseDataBuilder;
 
@@ -31,6 +31,7 @@ pub fn configure(discord_public_key: PublicKey) -> impl Fn(&mut web::ServiceConf
     }
 }
 
+/// Main entrypoint for web interaction requests to this app from discord.
 #[tracing::instrument(name = "Calling Discord API", skip(_req, interaction))]
 pub async fn discord_api(
     _req: HttpRequest,
@@ -44,16 +45,16 @@ pub async fn discord_api(
             tracing::info!("Received ping, sending pong.");
             Ok(HttpResponse::Ok()
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
-                .json(InteractionResponseType::Pong))
+                .json(InteractionResponse {
+                    kind: InteractionResponseType::Pong,
+                    data: None,
+                }))
         }
         Interaction::ApplicationCommand(c) => {
             // Run handler to get correct response
             let response = application_command_handler(&c, &pool).await;
-            // .context("Problem running application command handler");
 
-            //TODO: If response is Err, log the error, send a pretty display to the user
-
-            let response = match response {
+            let response_data = match response {
                 Ok(response) => response,
                 Err(e) => {
                     tracing::error!("An error occurred: {:?}", e);
@@ -61,6 +62,10 @@ pub async fn discord_api(
                 }
             };
 
+            let response = InteractionResponse {
+                kind: InteractionResponseType::ChannelMessageWithSource,
+                data: Some(response_data),
+            };
             Ok(HttpResponse::Ok()
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
                 .json(response))

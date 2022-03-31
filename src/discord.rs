@@ -23,14 +23,6 @@ pub fn format_simple_message_response(message: &str) -> InteractionResponseData 
     InteractionResponseDataBuilder::new()
         .content(message.to_string())
         .build()
-    // InteractionResponse::ChannelMessageWithSource(CallbackData {
-    //     allowed_mentions: None,
-    //     flags: None,
-    //     tts: None,
-    //     content: Some(message.to_string()),
-    //     embeds: Default::default(),
-    //     components: Default::default(),
-    // })
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
