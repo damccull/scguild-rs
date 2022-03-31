@@ -1,12 +1,13 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse, ResponseError};
-use anyhow::Context;
+
 use ed25519_dalek::PublicKey;
 use sqlx::PgPool;
 use tracing_actix_web::RequestId;
-use twilight_model::application::{
-    callback::{CallbackData, InteractionResponse},
-    interaction::{ApplicationCommand, Interaction},
+use twilight_model::{
+    application::interaction::{ApplicationCommand, Interaction},
+    http::interaction::{InteractionResponse, InteractionResponseData, InteractionResponseType},
 };
+use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{error_chain_fmt, middleware::ed25519_signatures};
 
@@ -30,6 +31,7 @@ pub fn configure(discord_public_key: PublicKey) -> impl Fn(&mut web::ServiceConf
     }
 }
 
+/// Main entrypoint for web interaction requests to this app from discord.
 #[tracing::instrument(name = "Calling Discord API", skip(_req, interaction))]
 pub async fn discord_api(
     _req: HttpRequest,
@@ -43,16 +45,16 @@ pub async fn discord_api(
             tracing::info!("Received ping, sending pong.");
             Ok(HttpResponse::Ok()
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
-                .json(InteractionResponse::Pong))
+                .json(InteractionResponse {
+                    kind: InteractionResponseType::Pong,
+                    data: None,
+                }))
         }
         Interaction::ApplicationCommand(c) => {
             // Run handler to get correct response
             let response = application_command_handler(&c, &pool).await;
-            // .context("Problem running application command handler");
 
-            //TODO: If response is Err, log the error, send a pretty display to the user
-
-            let response = match response {
+            let response_data = match response {
                 Ok(response) => response,
                 Err(e) => {
                     tracing::error!("An error occurred: {:?}", e);
@@ -60,24 +62,29 @@ pub async fn discord_api(
                 }
             };
 
+            let response = InteractionResponse {
+                kind: InteractionResponseType::ChannelMessageWithSource,
+                data: Some(response_data),
+            };
             Ok(HttpResponse::Ok()
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
                 .json(response))
         }
-        Interaction::ApplicationCommandAutocomplete(c) => {
-            let response = application_command_autocomplete_handler(&c, &pool)
-                .await
-                .context("Problem running application command autocomplete handler")?;
+        //TODO: REENABLE
+        // Interaction::ApplicationCommandAutocomplete(c) => {
+        //     let response = application_command_autocomplete_handler(&c, &pool)
+        //         .await
+        //         .context("Problem running application command autocomplete handler")?;
 
-            Ok(HttpResponse::Ok()
-                .append_header(header::ContentType(mime::APPLICATION_JSON))
-                .json(response))
-        }
+        //     Ok(HttpResponse::Ok()
+        //         .append_header(header::ContentType(mime::APPLICATION_JSON))
+        //         .json(response))
+        // }
         _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
     }
 }
 
-async fn format_user_error(request_id: RequestId) -> InteractionResponse {
+async fn format_user_error(request_id: RequestId) -> InteractionResponseData {
     let body = format!(
         "Request ID: {}\n\n\
         What were you doing when the error occurred? Please provide as much detail as possible, \
@@ -87,27 +94,37 @@ async fn format_user_error(request_id: RequestId) -> InteractionResponse {
 
     let body = urlencoding::encode(&body);
 
-    InteractionResponse::ChannelMessageWithSource(CallbackData {
-        allowed_mentions: None,
-        flags: None,
-        tts: None,
-        content: Some(format!(
-            "There was an error processing your request. \
-            If this happens repeatedly, \
-            [please open an issue on the github repo](<https://github.com/damccull/norseline-rs/issues/new?body={}>) \
-            with this request id: {}",
-            body, request_id
-        )),
-        embeds: Default::default(),
-        components: Default::default(),
-    })
+    let response = InteractionResponseDataBuilder::new().content(format!(
+        "There was an error processing your request. \
+        If this happens repeatedly, \
+        [please open an issue on the github repo](<https://github.com/damccull/norseline-rs/issues/new?body={}>) \
+        with this request id: {}",
+        body, request_id
+    ));
+
+    response.build()
+
+    // InteractionResponse::ChannelMessageWithSource(CallbackData {
+    //     allowed_mentions: None,
+    //     flags: None,
+    //     tts: None,
+    //     content: Some(format!(
+    //         "There was an error processing your request. \
+    //         If this happens repeatedly, \
+    //         [please open an issue on the github repo](<https://github.com/damccull/norseline-rs/issues/new?body={}>) \
+    //         with this request id: {}",
+    //         body, request_id
+    //     )),
+    //     embeds: Default::default(),
+    //     components: Default::default(),
+    // })
 }
 
 #[tracing::instrument(name = "Handling ApplicationCommand", skip(cmd, pool))]
 async fn application_command_handler(
     cmd: &ApplicationCommand,
     pool: &PgPool,
-) -> Result<InteractionResponse, DiscordApiError> {
+) -> Result<InteractionResponseData, DiscordApiError> {
     match cmd.data.name.as_ref() {
         FleetCommand::NAME => FleetCommand::handler(cmd, pool).await,
         HelloCommand::NAME => HelloCommand::handler(cmd).await,
@@ -121,7 +138,7 @@ async fn application_command_handler(
 async fn application_command_autocomplete_handler(
     cmd: &ApplicationCommand,
     pool: &PgPool,
-) -> Result<InteractionResponse, DiscordApiError> {
+) -> Result<InteractionResponseData, DiscordApiError> {
     match cmd.data.name.as_ref() {
         FleetCommand::NAME => FleetCommand::autocomplete_handler(cmd, pool).await,
         _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(

@@ -31,7 +31,7 @@ impl Interaction {
 
     /// Acknowledge the interaction, useful on commands that take a while to finish.
     /// 
-    /// After calling thi, use [`Interaction::update_response`] to add the finished response.
+    /// After calling this, use [`Interaction::update_response`] to add the finished response.
     /// 
     /// <https://discord.com/developers/docs/interactions/slash-commands#interaction-response-object>
     pub async fn ack(&self) -> Result<(), twilight_http::Error> {

@@ -56,10 +56,10 @@ tracing-subscriber = { version = "~0.3.9", features = [
     "env-filter",
 ] }
 tokio = { version = "1", features = ["full"] }
-twilight-http = "~0.8"
-twilight-interactions = "~0.8.1"
-twilight-model = "~0.8"
-twilight-util = { version = "~0.8", features = ["builder"] }
+twilight-http = "~0.10"
+twilight-interactions = "~0.10"
+twilight-model = "~0.10"
+twilight-util = { version = "~0.10", features = ["builder"] }
 urlencoding = "~2.1.0"
 uuid = { version = "~0.8.2", features = ["v4", "serde"] }
 
