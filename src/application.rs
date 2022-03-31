@@ -1,4 +1,4 @@
-use std::{net::TcpListener, sync::Arc};
+use std::{net::TcpListener};
 
 use actix_cors::Cors;
 use actix_web::{dev::Server, web::Data, App, HttpServer};
