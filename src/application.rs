@@ -9,8 +9,8 @@ use sqlx::{postgres::PgPoolOptions, PgPool};
 use tracing_actix_web::TracingLogger;
 
 use ed25519_dalek::PublicKey;
-use twilight_http::Client as HttpClient;
-use twilight_model::id::{marker::GuildMarker, ApplicationId, GuildId, Id};
+use twilight_http::Client as TwilightHttpClient;
+use twilight_model::id::{marker::GuildMarker, Id};
 
 use crate::{
     configuration::{DatabaseSettings, DiscordSettings, Settings},
@@ -64,6 +64,56 @@ impl Application {
 
     #[tracing::instrument(name = "Registering commands with discord", skip(self))]
     pub async fn register_commands_with_discord(&self) -> Result<(), anyhow::Error> {
+        let access_token = self.get_discord_auth_token().await?;
+
+        tracing::debug!("Setting up twilight http client.");
+        let http = TwilightHttpClient::new(format!("Bearer {}", access_token));
+
+        tracing::debug!("Getting application_id");
+        let application_id = http
+            .current_user_application()
+            .exec()
+            .await
+            .context("Unable to get application.")?
+            .model()
+            .await
+            .context("Unable to get model.")?
+            .id;
+
+        tracing::debug!("Setting test guild ID.");
+        let guild_id = Id::<GuildMarker>::new(self.discord_settings.guild_id);
+
+        tracing::debug!("Setting guild commands.");
+        http.interaction(application_id)
+            .set_guild_commands(guild_id, &discord::commands())
+            .exec()
+            .await
+            .context("Unable to set_guild_commands")?;
+
+        tracing::info!("Guild commands registered.");
+
+        // http.set_application_id(ApplicationId::new(self.discord_settings.application_id).unwrap());
+
+        // // // http.set_global_commands(&discord_commands::commands())?
+        // // //     .exec()
+        // // //     .await?;
+        // http.set_guild_commands(
+        //     GuildId::new(self.discord_settings.guild_id).unwrap(),
+        //     &discord::commands(),
+        // )?
+        // .exec()
+        // .await?;
+
+        // REMOVE COMMANDS
+        // http.set_global_commands(&[])?.exec().await?;
+        // http.set_guild_commands(GuildId::new(745809834183753828).unwrap(), &[])?
+        //     .exec()
+        //     .await?;
+        Ok(())
+    }
+
+    #[tracing::instrument(name = "Get Discord Auth Token", skip(self))]
+    async fn get_discord_auth_token(&self) -> anyhow::Result<String> {
         #[derive(Debug, Deserialize)]
         struct ClientCredential {
             #[serde(rename = "access_token")]
@@ -109,51 +159,8 @@ impl Application {
             .context("Error deserializing client credential")?;
 
         tracing::debug!("Client credential is valid.");
-        tracing::debug!("Setting application commands with discord API.");
-
-        let http = Arc::new(HttpClient::new(format!(
-            "Bearer {}",
-            client_credential.access_token
-        )));
-
-        tracing::debug!("Getting application_id");
-        let application_id = http
-            .current_user_application()
-            .exec()
-            .await?
-            .model()
-            .await?
-            .id;
-
-        tracing::debug!("Setting test guild ID.");
-        let guild_id = Id::<GuildMarker>::new(self.discord_settings.guild_id);
-
-        tracing::debug!("Setting guild commands.");
-        http.interaction(application_id)
-            .set_guild_commands(guild_id, &discord::commands())
-            .exec()
-            .await?;
-
-        tracing::info!("Guild commands registered.");
-
-        // http.set_application_id(ApplicationId::new(self.discord_settings.application_id).unwrap());
-
-        // // // http.set_global_commands(&discord_commands::commands())?
-        // // //     .exec()
-        // // //     .await?;
-        // http.set_guild_commands(
-        //     GuildId::new(self.discord_settings.guild_id).unwrap(),
-        //     &discord::commands(),
-        // )?
-        // .exec()
-        // .await?;
-
-        // REMOVE COMMANDS
-        // http.set_global_commands(&[])?.exec().await?;
-        // http.set_guild_commands(GuildId::new(745809834183753828).unwrap(), &[])?
-        //     .exec()
-        //     .await?;
-        Ok(())
+        tracing::debug!("Access token is {}", &client_credential.access_token);
+        Ok(client_credential.access_token)
     }
 }
 
