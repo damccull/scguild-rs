@@ -1,4 +1,4 @@
-use std::{net::TcpListener};
+use std::net::TcpListener;
 
 use actix_cors::Cors;
 use actix_web::{dev::Server, web::Data, App, HttpServer};
@@ -10,7 +10,10 @@ use tracing_actix_web::TracingLogger;
 
 use ed25519_dalek::PublicKey;
 use twilight_http::Client as TwilightHttpClient;
-use twilight_model::id::{marker::GuildMarker, Id};
+use twilight_model::id::{
+    marker::{ApplicationMarker, GuildMarker},
+    Id,
+};
 
 use crate::{
     configuration::{DatabaseSettings, DiscordSettings, Settings},
@@ -69,26 +72,28 @@ impl Application {
         tracing::debug!("Setting up twilight http client.");
         let http = TwilightHttpClient::new(format!("Bearer {}", access_token));
 
-        tracing::debug!("Getting application_id");
-        let application_id = http
-            .current_user_application()
-            .exec()
-            .await
-            .context("Unable to get application.")?
-            .model()
-            .await
-            .context("Unable to get model.")?
-            .id;
+        // tracing::debug!("Getting application_id");
+        // let application_id = http
+        //     .current_user_application()
+        //     .exec()
+        //     .await
+        //     .context("Unable to get application.")?
+        //     .model()
+        //     .await
+        //     .context("Unable to get model.")?
+        //     .id;
 
         tracing::debug!("Setting test guild ID.");
         let guild_id = Id::<GuildMarker>::new(self.discord_settings.guild_id);
 
         tracing::debug!("Setting guild commands.");
-        http.interaction(application_id)
-            .set_guild_commands(guild_id, &discord::commands())
-            .exec()
-            .await
-            .context("Unable to set_guild_commands")?;
+        http.interaction(Id::<ApplicationMarker>::new(
+            self.discord_settings.application_id,
+        ))
+        .set_guild_commands(guild_id, &discord::commands())
+        .exec()
+        .await
+        .context("Unable to set_guild_commands")?;
 
         tracing::info!("Guild commands registered.");
 
