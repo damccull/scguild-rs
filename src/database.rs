@@ -60,7 +60,7 @@ pub async fn get_ships_by_model_name(
         r#"
         SELECT id, class_name, name, description
         FROM ship_models
-        WHERE name LIKE $1
+        WHERE lower(name) LIKE lower($1)
         "#,
         format!("%{}%", name)
     )
