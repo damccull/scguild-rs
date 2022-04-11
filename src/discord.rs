@@ -8,12 +8,13 @@ use twilight_util::builder::InteractionResponseDataBuilder;
 use crate::discord::commands::{FleetCommand, HelloCommand};
 
 pub mod api;
+pub mod twilight_interactions_extensions;
 mod commands;
 
 pub fn commands() -> Vec<Command> {
     vec![
         // About::define(),
-        FleetCommand::create_command().into(),
+        FleetCommand::register().into(),
         // Wishlist::define(),
         HelloCommand::create_command().into(),
     ]

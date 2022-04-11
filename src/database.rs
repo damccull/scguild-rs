@@ -52,6 +52,35 @@ pub async fn get_ship_by_id(pool: &PgPool, id: Uuid) -> Result<ShipModel, Databa
     })
 }
 
+pub async fn get_ships_by_model_name(
+    pool: &PgPool,
+    name: String,
+) -> Result<Vec<ShipModel>, DatabaseError> {
+    let record = sqlx::query!(
+        r#"
+        SELECT id, class_name, name, description
+        FROM ship_models
+        WHERE name LIKE $1
+        "#,
+        format!("%{}%", name)
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("No record found for {}: {}", name, e);
+        DatabaseError::RecordNotFoundError(name.to_string())
+    })?
+    .iter()
+    .map(|row| ShipModel {
+        id: row.id.to_owned(),
+        name: row.name.to_owned(),
+        description: row.description.to_owned(),
+    })
+    .collect::<Vec<_>>();
+
+    Ok(record)
+}
+
 pub async fn insert_user(pool: &PgPool, user: User) -> Result<Uuid, DatabaseError> {
     let mut transaction = pool
         .begin()

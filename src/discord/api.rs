@@ -4,7 +4,7 @@ use ed25519_dalek::PublicKey;
 use sqlx::PgPool;
 use tracing_actix_web::RequestId;
 use twilight_model::{
-    application::interaction::{ApplicationCommand, Interaction},
+    application::interaction::{ApplicationCommand, Interaction, ApplicationCommandAutocomplete},
     http::interaction::{InteractionResponse, InteractionResponseData, InteractionResponseType},
 };
 use twilight_util::builder::InteractionResponseDataBuilder;
@@ -52,15 +52,15 @@ pub async fn discord_api(
         }
         Interaction::ApplicationCommand(c) => {
             // Run handler to get correct response
-            let response = application_command_handler(&c, &pool).await;
-
-            let response_data = match response {
-                Ok(response) => response,
-                Err(e) => {
-                    tracing::error!("An error occurred: {:?}", e);
-                    format_user_error(request_id).await
-                }
-            };
+            let response = application_command_handler(&c, &pool).await?;
+            let response_data = response;
+            // let response_data = match response {
+            //     Ok(response) => response,
+            //     Err(e) => {
+            //         tracing::error!("An error occurred: {:?}", e);
+            //         format_user_error(request_id).await
+            //     }
+            // };
 
             let response = InteractionResponse {
                 kind: InteractionResponseType::ChannelMessageWithSource,
@@ -70,16 +70,15 @@ pub async fn discord_api(
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
                 .json(response))
         }
-        //TODO: REENABLE
-        // Interaction::ApplicationCommandAutocomplete(c) => {
-        //     let response = application_command_autocomplete_handler(&c, &pool)
-        //         .await
-        //         .context("Problem running application command autocomplete handler")?;
+        // TODO: REENABLE
+        Interaction::ApplicationCommandAutocomplete(c) => {
+            let response = application_command_autocomplete_handler(&c, &pool)
+                .await?;
 
-        //     Ok(HttpResponse::Ok()
-        //         .append_header(header::ContentType(mime::APPLICATION_JSON))
-        //         .json(response))
-        // }
+            Ok(HttpResponse::Ok()
+                .append_header(header::ContentType(mime::APPLICATION_JSON))
+                .json(response))
+        }
         _ => Err(DiscordApiError::UnsupportedInteraction(interaction)),
     }
 }
@@ -136,7 +135,7 @@ async fn application_command_handler(
 
 #[tracing::instrument(name = "Handling ApplicationCommandAutocomplete", skip(cmd, pool))]
 async fn application_command_autocomplete_handler(
-    cmd: &ApplicationCommand,
+    cmd: &ApplicationCommandAutocomplete,
     pool: &PgPool,
 ) -> Result<InteractionResponseData, DiscordApiError> {
     match cmd.data.name.as_ref() {
