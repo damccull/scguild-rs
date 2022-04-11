@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::discord::api::DiscordApiError;
 use sqlx::PgPool;
 use twilight_interactions::command::CommandInputData;
@@ -52,10 +54,7 @@ impl FleetCommand {
         let x: CommandInputData = cmd.data.clone().into();
         match cmd.data.name.as_str() {
             AddCommand::NAME => {
-                let add_command = AddCommand {
-                    ship_model: todo!(),
-                    ship_name: todo!(),
-                };
+                let add_command = AddCommand::try_from(cmd.data.options.clone())?;
                 add_command.handler(cmd, pool).await
             }
             // FleetCommand::List(list_command) => list_command.handler(cmd, pool).await,
