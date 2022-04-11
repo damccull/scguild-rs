@@ -1,8 +1,8 @@
-use std::convert::TryFrom;
+use std::convert::{TryInto};
 
 use crate::discord::api::DiscordApiError;
 use sqlx::PgPool;
-use twilight_interactions::command::CommandInputData;
+
 use twilight_model::{
     application::{
         command::{Command, CommandType},
@@ -19,17 +19,7 @@ pub mod add;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
-pub enum FleetCommand {
-    Add(AddCommand),
-    // #[command(name = "list")]
-    // List(ListCommand),
-    // #[command(name = "remove")]
-    // Remove(RemoveCommand),
-    // #[command(name = "rename")]
-    // Rename(RenameCommand),
-    // #[command(name = "show")]
-    // Show(ShowCommand),
-}
+pub struct FleetCommand;
 impl FleetCommand {
     pub const NAME: &'static str = "fleet";
     pub const DESCRIPTION: &'static str = "Manage or view your fleet, or show it off.";
@@ -51,10 +41,10 @@ impl FleetCommand {
         cmd: &ApplicationCommand,
         pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
-        let x: CommandInputData = cmd.data.clone().into();
+        //let x: CommandInputData = cmd.data.clone().into();
         match cmd.data.name.as_str() {
             AddCommand::NAME => {
-                let add_command = AddCommand::try_from(cmd.data.options.clone())?;
+                let add_command: AddCommand = cmd.data.options.clone().try_into()?;
                 add_command.handler(cmd, pool).await
             }
             // FleetCommand::List(list_command) => list_command.handler(cmd, pool).await,
@@ -72,19 +62,19 @@ impl FleetCommand {
 
     #[tracing::instrument(
         name = "Discord Interaction - FLEET AUTOCOMPLETE DISPATCH",
-        skip(autocomplete, _pool)
+        skip(autocomplete, pool)
     )]
     pub async fn autocomplete_handler(
         autocomplete: &ApplicationCommandAutocomplete,
-        _pool: &PgPool,
+        pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
         let command_name = autocomplete.data.name.as_str();
 
         match command_name {
-            // AddCommand::NAME => {
-            // let add_command = AddCommandPartial{ ship_model: autocomplete.data.options[0].}
-            // add_command.autocomplete_handler(autocomplete)
-            // },
+            AddCommand::NAME => {
+                let add_command: AddCommand = autocomplete.data.options.clone().into();
+                add_command.autocomplete_handler(autocomplete, pool).await
+            }
             _ => Err(DiscordApiError::UnsupportedCommand(
                 "Autocomplete not supported on command.".to_string(),
             )),

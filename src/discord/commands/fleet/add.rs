@@ -114,7 +114,7 @@ impl AddCommand {
         name = "Discord Interaction - FLEET ADD AUTOCOMPLETE HANDLER",
         skip(self, _pool)
     )]
-    fn autocomplete_handler(
+    pub async fn autocomplete_handler(
         &self,
         autocomplete: &ApplicationCommandAutocomplete,
         _pool: &PgPool,
