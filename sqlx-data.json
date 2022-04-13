@@ -30,6 +30,44 @@
     },
     "query": "\n        SELECT id, name, description\n        FROM ship_models\n        "
   },
+  "2ab47563b65c233290f4985bbc9de48cc40d95b9ae034a4a8358dc50f696f8ed": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "class_name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT id, class_name, name, description\n        FROM ship_models\n        WHERE lower(name) LIKE lower($1)\n        "
+  },
   "36ece4cec3069d1c66d641328ddf80b2019a2080987a36647d99c69ff2a477f3": {
     "describe": {
       "columns": [
