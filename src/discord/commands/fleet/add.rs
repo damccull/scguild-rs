@@ -31,11 +31,19 @@ use super::{Ship, FAKEDB};
 
 #[derive(Clone, Debug)]
 pub struct AddCommand {
-    /// The model of ship you want to add.
-    pub ship_model_id: InteractionAutocompleteOption<String>,
+    /// The model ID of ship you want to add.
+    /// Note: This is a partial user-typed string during autocomplete
+    /// and a UUID in String format for the final result.
+    pub ship_model: InteractionAutocompleteOption<String>,
     /// The name of the ship. (Optional)
     pub ship_name: Option<String>,
 }
+
+// These constants are used to ensure matching strings are used in multiple places in the code
+const OPTION_SHIP_MODEL_NAME: &str = "ship_model";
+const OPTION_SHIP_MODEL_DESCRIPTION: &str = "type the ship model";
+const OPTION_SHIP_NAME_NAME: &str = "ship_name";
+const OPTION_SHIP_NAME_DESCRIPTION: &str = "type the name of the ship";
 
 impl DiscordSubcommand for AddCommand {
     const NAME: &'static str = "add";
@@ -44,13 +52,16 @@ impl DiscordSubcommand for AddCommand {
     fn register() -> CommandOption {
         SubCommandBuilder::new(Self::NAME.into(), Self::DESCRIPTION.into())
             .option(
-                StringBuilder::new("ship_model".into(), "type the ship model".into())
-                    .required(true)
-                    .autocomplete(true),
+                StringBuilder::new(
+                    OPTION_SHIP_MODEL_NAME.into(),
+                    OPTION_SHIP_MODEL_DESCRIPTION.into(),
+                )
+                .required(true)
+                .autocomplete(true),
             )
             .option(StringBuilder::new(
-                "ship_name".into(),
-                "type the name of the ship".into(),
+                OPTION_SHIP_NAME_NAME.into(),
+                OPTION_SHIP_NAME_DESCRIPTION.into(),
             ))
             .build()
     }
@@ -63,7 +74,7 @@ impl AddCommand {
         cmd: &ApplicationCommand,
         pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
-        let user_query = match self.ship_model_id.clone() {
+        let user_query = match self.ship_model.clone() {
             InteractionAutocompleteOption::Complete(x) => x,
             _ => {
                 return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
@@ -121,7 +132,7 @@ impl AddCommand {
         autocomplete: &ApplicationCommandAutocomplete,
         pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
-        let user_query = match self.ship_model_id.clone() {
+        let user_query = match self.ship_model.clone() {
             InteractionAutocompleteOption::Partial(x) => x,
             _ => {
                 return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
@@ -145,7 +156,7 @@ impl AddCommand {
                 tracing::warn!("Unable to parse given string as UUID: {:?}", e);
                 return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
                     "Unable to find ship model in database: {:?}",
-                    &self.ship_model_id
+                    &self.ship_model
                 )));
             }
         };
@@ -169,31 +180,41 @@ impl TryFrom<Vec<CommandDataOption>> for AddCommand {
             tracing::debug!("The MAP says: {:#?}", map);
 
             Ok(Self {
-                ship_model_id: InteractionAutocompleteOption::Complete(
-                    if map.contains_key("ship_model") {
+                ship_model: InteractionAutocompleteOption::Complete(
+                    if map.contains_key(OPTION_SHIP_MODEL_NAME) {
                         tracing::debug!(
                             "THE SHIP_MODEL IS: {:#?}",
-                            subcommand_options[map["ship_model"]].value
+                            subcommand_options[map[OPTION_SHIP_MODEL_NAME]].value
                         );
-                        if let CommandOptionValue::String(ship_model) =
-                            subcommand_options[map["ship_model"]].value.clone()
+                        if let CommandOptionValue::String(ship_model) = subcommand_options
+                            [map[OPTION_SHIP_MODEL_NAME]]
+                            .value
+                            .clone()
                         {
                             ship_model
                         } else {
-                            bail!("add command 'ship_model' is not a string: {options:#?}")
+                            bail!(
+                                "add command '{}' is not a string: {:#?}",
+                                OPTION_SHIP_MODEL_NAME,
+                                options
+                            )
                         }
                     } else {
-                        bail!("add command 'ship_model' option missing")
+                        bail!("add command '{}' option missing", OPTION_SHIP_MODEL_NAME)
                     },
                 ),
                 ship_name: {
-                    if map.contains_key("ship_name") {
+                    if map.contains_key(OPTION_SHIP_NAME_NAME) {
                         if let CommandOptionValue::String(ship_name) =
-                            subcommand_options[map["ship_name"]].value.clone()
+                            subcommand_options[map[OPTION_SHIP_NAME_NAME]].value.clone()
                         {
                             Some(ship_name)
                         } else {
-                            bail!("add command 'ship_name' is not a string: {options:#?}")
+                            bail!(
+                                "add command '{}' is not a string: {:#?}",
+                                OPTION_SHIP_NAME_NAME,
+                                options
+                            )
                         }
                     } else {
                         None
@@ -201,7 +222,7 @@ impl TryFrom<Vec<CommandDataOption>> for AddCommand {
                 },
             })
         } else {
-            bail!("option 'add' is not a SubCommand")
+            bail!("option '{}' is not a SubCommand", Self::NAME)
         }
     }
 }
@@ -216,10 +237,10 @@ impl TryFrom<Vec<ApplicationCommandAutocompleteDataOption>> for AddCommand {
         });
 
         Ok(Self {
-            ship_model_id: {
-                if map.contains_key("ship_model") {
+            ship_model: {
+                if map.contains_key(OPTION_SHIP_MODEL_NAME) {
                     InteractionAutocompleteOption::Partial(
-                        options[0].options[map["ship_model"]]
+                        options[0].options[map[OPTION_SHIP_MODEL_NAME]]
                             .value
                             .clone()
                             .ok_or_else(|| anyhow::anyhow!("No such ship model"))?,
@@ -232,8 +253,8 @@ impl TryFrom<Vec<ApplicationCommandAutocompleteDataOption>> for AddCommand {
             },
 
             ship_name: {
-                if map.contains_key("ship_name") {
-                    options[0].options[map["ship_name"]].value.clone()
+                if map.contains_key(OPTION_SHIP_NAME_NAME) {
+                    options[0].options[map[OPTION_SHIP_NAME_NAME]].value.clone()
                 } else {
                     None
                 }
