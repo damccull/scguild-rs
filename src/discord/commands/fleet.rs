@@ -1,6 +1,8 @@
 use std::convert::TryInto;
 
-use crate::discord::{api::DiscordApiError, DiscordCommand, DiscordSubcommand, commands::list::ListCommand};
+use crate::discord::{
+    api::DiscordApiError, commands::list::ListCommand, DiscordCommand, DiscordSubcommand,
+};
 use sqlx::PgPool;
 
 use twilight_model::{
@@ -38,7 +40,6 @@ impl DiscordCommand for FleetCommand {
 }
 
 impl FleetCommand {
-
     #[tracing::instrument(name = "Discord Interaction - FLEET DISPATCH", skip(pool))]
     pub async fn handler(
         cmd: &ApplicationCommand,
@@ -56,7 +57,7 @@ impl FleetCommand {
             AddCommand::NAME => {
                 let add_command: AddCommand = cmd.data.options.clone().try_into()?;
                 add_command.handler(cmd, pool).await
-            },
+            }
             ListCommand::NAME => {
                 todo!()
                 // let list_command: ListCommand = cmd.data.options.clone().try_into()?;

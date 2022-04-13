@@ -11,7 +11,10 @@ use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{error_chain_fmt, middleware::ed25519_signatures};
 
-use super::{commands::{FleetCommand, HelloCommand}, DiscordCommand};
+use super::{
+    commands::{FleetCommand, HelloCommand},
+    DiscordCommand,
+};
 
 /// Configures actix_web routes.
 /// Example:
@@ -51,16 +54,8 @@ pub async fn discord_api(
                 }))
         }
         Interaction::ApplicationCommand(c) => {
-            // Run handler to get correct response
             let response = application_command_handler(&c, &pool).await?;
             let response_data = response;
-            // let response_data = match response {
-            //     Ok(response) => response,
-            //     Err(e) => {
-            //         tracing::error!("An error occurred: {:?}", e);
-            //         format_user_error(request_id).await
-            //     }
-            // };
 
             let response = InteractionResponse {
                 kind: InteractionResponseType::ChannelMessageWithSource,
@@ -70,7 +65,6 @@ pub async fn discord_api(
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
                 .json(response))
         }
-        // TODO: REENABLE
         Interaction::ApplicationCommandAutocomplete(c) => {
             let response_data = application_command_autocomplete_handler(&c, &pool).await?;
 
@@ -87,7 +81,7 @@ pub async fn discord_api(
     }
 }
 
-async fn format_user_error(request_id: RequestId) -> InteractionResponseData {
+async fn _format_user_error(request_id: RequestId) -> InteractionResponseData {
     let body = format!(
         "Request ID: {}\n\n\
         What were you doing when the error occurred? Please provide as much detail as possible, \
