@@ -12,9 +12,10 @@ use twilight_model::{
     },
     channel::message::MessageFlags,
     http::interaction::InteractionResponseData,
+    id::{marker::UserMarker, Id},
 };
 use twilight_util::builder::{
-    command::{BooleanBuilder, StringBuilder, SubCommandBuilder},
+    command::{BooleanBuilder, SubCommandBuilder, UserBuilder},
     InteractionResponseDataBuilder,
 };
 
@@ -22,7 +23,7 @@ use crate::discord::{api::DiscordApiError, DiscordSubcommand};
 
 #[derive(Clone, Debug)]
 pub struct ListCommand {
-    user: Option<String>,
+    user: Option<Id<UserMarker>>,
     show_everyone: bool,
 }
 
@@ -39,7 +40,7 @@ impl DiscordSubcommand for ListCommand {
 
     fn register() -> CommandOption {
         SubCommandBuilder::new(Self::NAME.into(), Self::DESCRIPTION.into())
-            .option(StringBuilder::new(
+            .option(UserBuilder::new(
                 OPTION_USER_NAME.into(),
                 OPTION_USER_DESCRIPTION.into(),
             ))
@@ -85,8 +86,17 @@ impl ListCommand {
             }
         } else {
             //Return the specified user's fleet
-            let mut response =
-                InteractionResponseDataBuilder::new().content("User specific content".to_string());
+            //First ensure that the user ID was not empty
+            let user_id = match self.user {
+                Some(u) => u,
+                None => {
+                    return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                        "No user sent in the fleet list command"
+                    )));
+                }
+            };
+            let mut response = InteractionResponseDataBuilder::new()
+                .content(format!("Showing ships for user ID: {}", user_id.to_string()));
             if !self.show_everyone {
                 response = response.flags(MessageFlags::EPHEMERAL);
             }
@@ -109,7 +119,7 @@ impl TryFrom<Vec<CommandDataOption>> for ListCommand {
             Ok(Self {
                 user: {
                     if map.contains_key(OPTION_USER_NAME) {
-                        if let CommandOptionValue::String(user) =
+                        if let CommandOptionValue::User(user) =
                             subcommand_options[map[OPTION_USER_NAME]].value.clone()
                         {
                             Some(user)
