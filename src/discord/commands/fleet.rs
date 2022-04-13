@@ -59,9 +59,8 @@ impl FleetCommand {
                 add_command.handler(cmd, pool).await
             }
             ListCommand::NAME => {
-                todo!()
-                // let list_command: ListCommand = cmd.data.options.clone().try_into()?;
-                // list_command.handler(cmd, pool).await
+                let list_command: ListCommand = cmd.data.options.clone().try_into()?;
+                list_command.handler(cmd).await
             }
             // FleetCommand::List(list_command) => list_command.handler(cmd, pool).await,
             // FleetCommand::Remove(_) => todo!(),
