@@ -4,7 +4,7 @@ use ed25519_dalek::PublicKey;
 use sqlx::PgPool;
 use tracing_actix_web::RequestId;
 use twilight_model::{
-    application::interaction::{ApplicationCommand, Interaction, ApplicationCommandAutocomplete},
+    application::interaction::{ApplicationCommand, ApplicationCommandAutocomplete, Interaction},
     http::interaction::{InteractionResponse, InteractionResponseData, InteractionResponseType},
 };
 use twilight_util::builder::InteractionResponseDataBuilder;
@@ -72,8 +72,12 @@ pub async fn discord_api(
         }
         // TODO: REENABLE
         Interaction::ApplicationCommandAutocomplete(c) => {
-            let response = application_command_autocomplete_handler(&c, &pool)
-                .await?;
+            let response_data = application_command_autocomplete_handler(&c, &pool).await?;
+
+            let response = InteractionResponse {
+                kind: InteractionResponseType::ApplicationCommandAutocompleteResult,
+                data: Some(response_data),
+            };
 
             Ok(HttpResponse::Ok()
                 .append_header(header::ContentType(mime::APPLICATION_JSON))
@@ -102,21 +106,6 @@ async fn format_user_error(request_id: RequestId) -> InteractionResponseData {
     ));
 
     response.build()
-
-    // InteractionResponse::ChannelMessageWithSource(CallbackData {
-    //     allowed_mentions: None,
-    //     flags: None,
-    //     tts: None,
-    //     content: Some(format!(
-    //         "There was an error processing your request. \
-    //         If this happens repeatedly, \
-    //         [please open an issue on the github repo](<https://github.com/damccull/norseline-rs/issues/new?body={}>) \
-    //         with this request id: {}",
-    //         body, request_id
-    //     )),
-    //     embeds: Default::default(),
-    //     components: Default::default(),
-    // })
 }
 
 #[tracing::instrument(name = "Handling ApplicationCommand", skip(cmd, pool))]

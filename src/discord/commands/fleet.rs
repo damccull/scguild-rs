@@ -1,4 +1,4 @@
-use std::convert::{TryInto};
+use std::convert::TryInto;
 
 use crate::discord::api::DiscordApiError;
 use sqlx::PgPool;
@@ -60,19 +60,21 @@ impl FleetCommand {
         }
     }
 
-    #[tracing::instrument(
-        name = "Discord Interaction - FLEET AUTOCOMPLETE DISPATCH",
-        skip(autocomplete, pool)
-    )]
+    #[tracing::instrument(name = "Discord Interaction - FLEET AUTOCOMPLETE DISPATCH", skip(pool))]
     pub async fn autocomplete_handler(
         autocomplete: &ApplicationCommandAutocomplete,
         pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
         let command_name = autocomplete.data.name.as_str();
+        tracing::debug!("Command Name: {}", command_name);
 
-        match command_name {
+        let subcommand = autocomplete.data.options.clone().pop().ok_or_else(|| {
+            DiscordApiError::UnexpectedError(anyhow::anyhow!("Subcommand missing."))
+        })?;
+
+        match subcommand.name.as_str() {
             AddCommand::NAME => {
-                let add_command: AddCommand = autocomplete.data.options.clone().into();
+                let add_command: AddCommand = autocomplete.data.options.clone().try_into()?;
                 add_command.autocomplete_handler(autocomplete, pool).await
             }
             _ => Err(DiscordApiError::UnsupportedCommand(
@@ -80,26 +82,6 @@ impl FleetCommand {
             )),
         }
     }
-
-    // pub async fn autocomplete_handler(
-    //     autocomplete: &ApplicationCommandAutocomplete,
-    //     _pool: &PgPool,
-    // ) -> Result<InteractionResponseData, DiscordApiError> {
-    //     let x = autocomplete.data.name;
-
-    //     match FleetCommandPartial::from_interaction(x) {
-    //         Ok(subcommand) => match subcommand {
-    //             //FleetCommandPartial::Add(add_command) => add_command.handle(cmd, pool).await,
-    //             _ => Err(DiscordApiError::AutocompleteUnsupported),
-    //         },
-    //         Err(e) => {
-    //             return Err(DiscordApiError::UnsupportedCommand(format!(
-    //                 "Something went wrong parsing the interaction: {}",
-    //                 e
-    //             )));
-    //         }
-    //     }
-    // }
 }
 
 // #[derive(CommandModel, CreateCommand, Debug)]

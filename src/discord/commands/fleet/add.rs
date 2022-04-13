@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use std::convert::TryFrom;
 use twilight_model::{
     application::{
-        command::CommandOption,
+        command::{CommandOption, CommandOptionChoice},
         interaction::{
             application_command::{CommandDataOption, CommandOptionValue},
             application_command_autocomplete::ApplicationCommandAutocompleteDataOption,
@@ -12,7 +12,10 @@ use twilight_model::{
     },
     http::interaction::InteractionResponseData,
 };
-use twilight_util::builder::command::SubCommandBuilder;
+use twilight_util::builder::{
+    command::{StringBuilder, SubCommandBuilder},
+    InteractionResponseDataBuilder,
+};
 
 use crate::{
     database,
@@ -37,7 +40,17 @@ impl AddCommand {
     pub const DESCRIPTION: &'static str = "Add a new ship to your fleet.";
 
     pub fn register() -> CommandOption {
-        SubCommandBuilder::new(Self::NAME.into(), Self::DESCRIPTION.into()).build()
+        SubCommandBuilder::new(Self::NAME.into(), Self::DESCRIPTION.into())
+            .option(
+                StringBuilder::new("ship_model".into(), "type the ship model".into())
+                    .required(true)
+                    .autocomplete(true),
+            )
+            .option(StringBuilder::new(
+                "ship_name".into(),
+                "type the name of the ship".into(),
+            ))
+            .build()
     }
 
     #[tracing::instrument(name = "Discord Interaction - FLEET ADD HANDLER", skip(self, pool))]
@@ -112,14 +125,47 @@ impl AddCommand {
 
     #[tracing::instrument(
         name = "Discord Interaction - FLEET ADD AUTOCOMPLETE HANDLER",
-        skip(self, _pool)
+        skip(self, pool)
     )]
     pub async fn autocomplete_handler(
         &self,
         autocomplete: &ApplicationCommandAutocomplete,
-        _pool: &PgPool,
+        pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
-        todo!()
+        let user_query = match self.ship_model.clone() {
+            InteractionAutocompleteOption::Partial(x) => x,
+            _ => {
+                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                    "ship_model seems to be incorrect"
+                )))
+            }
+        };
+
+        tracing::debug!("`user_query` is '{}'", user_query);
+
+        let choices = match database::get_ships_by_model_name(pool, user_query).await {
+            Ok(m) => m
+                .iter()
+                .take(25)
+                .map(|s| CommandOptionChoice::String {
+                    name: s.name.to_string(),
+                    value: s.id.to_string(),
+                })
+                .collect::<Vec<_>>(),
+            Err(e) => {
+                tracing::warn!("Unable to parse given string as UUID: {:?}", e);
+                return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                    "Unable to find ship model in database: {:?}",
+                    &self.ship_model
+                )));
+            }
+        };
+
+        let response_data = InteractionResponseDataBuilder::new()
+            .choices(choices)
+            .build();
+
+        Ok(response_data)
     }
 }
 impl TryFrom<Vec<CommandDataOption>> for AddCommand {
@@ -157,19 +203,28 @@ impl TryFrom<Vec<CommandDataOption>> for AddCommand {
         })
     }
 }
-impl From<Vec<ApplicationCommandAutocompleteDataOption>> for AddCommand {
-    fn from(options: Vec<ApplicationCommandAutocompleteDataOption>) -> Self {
-        Self {
+impl TryFrom<Vec<ApplicationCommandAutocompleteDataOption>> for AddCommand {
+    type Error = anyhow::Error;
+
+    fn try_from(options: Vec<ApplicationCommandAutocompleteDataOption>) -> Result<Self> {
+        Ok(Self {
             ship_model: InteractionAutocompleteOption::Partial(
-                options
+                options[0]
+                    .options
                     .iter()
                     .find(|option| option.name == "ship_model")
-                    .map_or("".to_string(), |o| o.value.clone().unwrap_or_default()),
+                    .context("add command missing 'ship_model' option")?
+                    .value
+                    .clone()
+                    .ok_or_else(|| anyhow::anyhow!("Unable to get ship_model",))?,
             ),
-            ship_name: options
+            ship_name: options[0]
+                .options
                 .iter()
                 .find(|option| option.name == "ship_name")
-                .and_then(|o| o.value.clone()),
-        }
+                .unwrap()
+                .value
+                .clone(),
+        })
     }
 }
