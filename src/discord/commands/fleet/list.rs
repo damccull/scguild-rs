@@ -23,7 +23,7 @@ use crate::discord::{api::DiscordApiError, DiscordSubcommand};
 
 #[derive(Clone, Debug)]
 pub struct ListCommand {
-    user: Option<Id<UserMarker>>,
+    user_id: Option<Id<UserMarker>>,
     show_everyone: bool,
 }
 
@@ -56,8 +56,10 @@ impl ListCommand {
         &self,
         cmd: &ApplicationCommand,
     ) -> Result<InteractionResponseData, DiscordApiError> {
+        let mut response = InteractionResponseDataBuilder::new();
+
         //First, see if a user was supplied
-        if self.user.is_none() {
+        if self.user_id.is_none() {
             //Return the user's own fleet
             //Ensure this isn't called with an empty user
             match &cmd.member {
@@ -73,21 +75,19 @@ impl ListCommand {
                             }
                         },
                     };
-                    let mut response =
-                        InteractionResponseDataBuilder::new().content(format!("Fleet for {}", x));
-                    if !self.show_everyone {
-                        response = response.flags(MessageFlags::EPHEMERAL);
-                    }
-                    Ok(response.build())
+
+                    response = response.content(format!("Fleet for {}", x));
                 }
-                _ => Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
-                    "Calling user is empty."
-                ))),
+                _ => {
+                    return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
+                        "Calling user is empty."
+                    )))
+                }
             }
         } else {
             //Return the specified user's fleet
             //First ensure that the user ID was not empty
-            let user_id = match self.user {
+            let user_id = match self.user_id {
                 Some(u) => u,
                 None => {
                     return Err(DiscordApiError::UnexpectedError(anyhow::anyhow!(
@@ -95,13 +95,14 @@ impl ListCommand {
                     )));
                 }
             };
-            let mut response = InteractionResponseDataBuilder::new()
-                .content(format!("Showing ships for user ID: {}", user_id.to_string()));
-            if !self.show_everyone {
-                response = response.flags(MessageFlags::EPHEMERAL);
-            }
-            Ok(response.build())
+            response = response.content(format!("Showing ships for user ID: {}", user_id));
         }
+
+        // Only show this to the user unless specified to show everyone
+        if !self.show_everyone {
+            response = response.flags(MessageFlags::EPHEMERAL);
+        }
+        Ok(response.build())
     }
 }
 
@@ -117,7 +118,7 @@ impl TryFrom<Vec<CommandDataOption>> for ListCommand {
             tracing::debug!("The MAP says: {:#?}", map);
 
             Ok(Self {
-                user: {
+                user_id: {
                     if map.contains_key(OPTION_USER_NAME) {
                         if let CommandOptionValue::User(user) =
                             subcommand_options[map[OPTION_USER_NAME]].value.clone()
