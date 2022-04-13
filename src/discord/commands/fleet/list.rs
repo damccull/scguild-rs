@@ -27,10 +27,10 @@ pub struct ListCommand {
 }
 
 // These constants are used to ensure matching strings are used in multiple places in the code
-const USER__OPTION_NAME: &str = "user";
-const USER__OPTION_DESCRIPTION: &str = "type the name of the user whos ships you want to see";
-const SHOW_EVERYONE__OPTION_NAME: &str = "show_everyone";
-const SHOW_EVERYONE__OPTION_DESCRIPTION: &str =
+const OPTION_USER_NAME: &str = "user";
+const OPTION_USER_DESCRIPTION: &str = "type the name of the user whose ships you want to see";
+const OPTION_SHOW_EVERYONE_NAME: &str = "show_everyone";
+const OPTION_SHOW_EVERYONE_DESCRIPTION: &str =
     "'true' if the list should be broadcast to the entire channel. Defaults to 'false'.";
 
 impl DiscordSubcommand for ListCommand {
@@ -40,12 +40,12 @@ impl DiscordSubcommand for ListCommand {
     fn register() -> CommandOption {
         SubCommandBuilder::new(Self::NAME.into(), Self::DESCRIPTION.into())
             .option(StringBuilder::new(
-                USER__OPTION_NAME.into(),
-                USER__OPTION_DESCRIPTION.into(),
+                OPTION_USER_NAME.into(),
+                OPTION_USER_DESCRIPTION.into(),
             ))
             .option(BooleanBuilder::new(
-                SHOW_EVERYONE__OPTION_NAME.into(),
-                SHOW_EVERYONE__OPTION_DESCRIPTION.into(),
+                OPTION_SHOW_EVERYONE_NAME.into(),
+                OPTION_SHOW_EVERYONE_DESCRIPTION.into(),
             ))
             .build()
     }
@@ -108,9 +108,9 @@ impl TryFrom<Vec<CommandDataOption>> for ListCommand {
 
             Ok(Self {
                 user: {
-                    if map.contains_key(USER__OPTION_NAME) {
+                    if map.contains_key(OPTION_USER_NAME) {
                         if let CommandOptionValue::String(user) =
-                            subcommand_options[map[USER__OPTION_NAME]].value.clone()
+                            subcommand_options[map[OPTION_USER_NAME]].value.clone()
                         {
                             Some(user)
                         } else {
@@ -121,9 +121,9 @@ impl TryFrom<Vec<CommandDataOption>> for ListCommand {
                     }
                 },
                 show_everyone: {
-                    if map.contains_key(SHOW_EVERYONE__OPTION_NAME) {
+                    if map.contains_key(OPTION_SHOW_EVERYONE_NAME) {
                         if let CommandOptionValue::Boolean(show_everyone) = subcommand_options
-                            [map[SHOW_EVERYONE__OPTION_NAME]]
+                            [map[OPTION_SHOW_EVERYONE_NAME]]
                             .value
                             .clone()
                         {
@@ -131,7 +131,7 @@ impl TryFrom<Vec<CommandDataOption>> for ListCommand {
                         } else {
                             tracing::warn!(
                                 "the {} option was not a boolean; defaulting to false",
-                                SHOW_EVERYONE__OPTION_NAME.to_string()
+                                OPTION_SHOW_EVERYONE_NAME.to_string()
                             );
                             false
                         }
