@@ -2,14 +2,14 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 use twilight_interactions::command::CreateCommand;
-use twilight_model::{application::command::Command, http::interaction::InteractionResponseData};
+use twilight_model::{application::command::{Command, CommandOption}, http::interaction::InteractionResponseData};
 use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::discord::commands::{FleetCommand, HelloCommand};
 
 pub mod api;
-pub mod twilight_interactions_extensions;
 mod commands;
+pub mod twilight_interactions_extensions;
 
 pub fn commands() -> Vec<Command> {
     vec![
@@ -24,6 +24,20 @@ pub fn format_simple_message_response(message: &str) -> InteractionResponseData 
     InteractionResponseDataBuilder::new()
         .content(message.to_string())
         .build()
+}
+
+pub trait DiscordCommand {
+    const NAME: &'static str;
+    const DESCRIPTION: &'static str;
+
+    fn register() -> Command;
+}
+
+pub trait DiscordSubcommand {
+    const NAME: &'static str;
+    const DESCRIPTION: &'static str;
+
+    fn register() -> CommandOption;
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

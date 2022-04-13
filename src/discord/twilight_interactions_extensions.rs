@@ -1,7 +1,9 @@
+use anyhow::{Ok, Result};
 use std::convert::TryFrom;
-use anyhow::{Result, Ok};
 
-use twilight_model::application::interaction::{Interaction, application_command::CommandDataOption};
+use twilight_model::application::interaction::{
+    application_command::CommandDataOption, Interaction,
+};
 
 #[derive(Clone, Debug)]
 pub enum InteractionAutocompleteOption<T> {

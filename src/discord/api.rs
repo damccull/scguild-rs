@@ -11,7 +11,7 @@ use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{error_chain_fmt, middleware::ed25519_signatures};
 
-use super::commands::{FleetCommand, HelloCommand};
+use super::{commands::{FleetCommand, HelloCommand}, DiscordCommand};
 
 /// Configures actix_web routes.
 /// Example:

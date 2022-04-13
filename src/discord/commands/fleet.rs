@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use crate::discord::api::DiscordApiError;
+use crate::discord::{api::DiscordApiError, DiscordCommand, DiscordSubcommand, commands::list::ListCommand};
 use sqlx::PgPool;
 
 use twilight_model::{
@@ -16,36 +16,51 @@ use uuid::Uuid;
 use self::add::AddCommand;
 
 pub mod add;
+pub mod list;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub struct FleetCommand;
-impl FleetCommand {
-    pub const NAME: &'static str = "fleet";
-    pub const DESCRIPTION: &'static str = "Manage or view your fleet, or show it off.";
-}
+impl DiscordCommand for FleetCommand {
+    const NAME: &'static str = "fleet";
+    const DESCRIPTION: &'static str = "Manage or view your fleet, or show it off.";
 
-impl FleetCommand {
-    pub fn register() -> Command {
+    fn register() -> Command {
         CommandBuilder::new(
             Self::NAME.into(),
             Self::DESCRIPTION.into(),
             CommandType::ChatInput,
         )
         .option(AddCommand::register())
+        .option(ListCommand::register())
         .build()
     }
+}
 
-    #[tracing::instrument(name = "Discord Interaction - FLEET DISPATCH", skip(cmd, pool))]
+impl FleetCommand {
+
+    #[tracing::instrument(name = "Discord Interaction - FLEET DISPATCH", skip(pool))]
     pub async fn handler(
         cmd: &ApplicationCommand,
         pool: &PgPool,
     ) -> Result<InteractionResponseData, DiscordApiError> {
-        //let x: CommandInputData = cmd.data.clone().into();
-        match cmd.data.name.as_str() {
+        let command_name = cmd.data.name.as_str();
+        tracing::debug!("Command Name: {}", command_name);
+
+        let subcommand = cmd.data.options.clone().pop().ok_or_else(|| {
+            DiscordApiError::UnexpectedError(anyhow::anyhow!("Subcommand missing."))
+        })?;
+        tracing::debug!("Subcommand Name: {}", subcommand.name);
+
+        match subcommand.name.as_str() {
             AddCommand::NAME => {
                 let add_command: AddCommand = cmd.data.options.clone().try_into()?;
                 add_command.handler(cmd, pool).await
+            },
+            ListCommand::NAME => {
+                todo!()
+                // let list_command: ListCommand = cmd.data.options.clone().try_into()?;
+                // list_command.handler(cmd, pool).await
             }
             // FleetCommand::List(list_command) => list_command.handler(cmd, pool).await,
             // FleetCommand::Remove(_) => todo!(),

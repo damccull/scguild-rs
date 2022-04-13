@@ -1464,6 +1464,7 @@ dependencies = [
  "config",
  "ed25519-dalek",
  "fake",
+ "fnv",
  "futures",
  "hex",
  "linkify",

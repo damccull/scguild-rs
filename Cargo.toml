@@ -62,6 +62,7 @@ twilight-model = "~0.10"
 twilight-util = { version = "~0.10", features = ["builder"] }
 urlencoding = "~2.1.0"
 uuid = { version = "~0.8.2", features = ["v4", "serde"] }
+fnv = "1.0.7"
 
 
 [dev-dependencies]
