@@ -5,7 +5,7 @@ use crate::discord::DiscordSubcommand;
 
 #[derive(Clone, Debug)]
 pub struct ListCommand {
-    _user_name: Option<String>,
+    _target_user: Option<String>,
 }
 impl DiscordSubcommand for ListCommand {
     const NAME: &'static str = "list";
