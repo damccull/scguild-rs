@@ -2,11 +2,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 use twilight_interactions::command::CreateCommand;
-use twilight_model::{
-    application::command::{Command, CommandOption},
-    http::interaction::InteractionResponseData,
-};
-use twilight_util::builder::InteractionResponseDataBuilder;
+use twilight_model::application::command::{Command, CommandOption};
 
 use crate::discord::commands::{FleetCommand, HelloCommand};
 
@@ -21,12 +17,6 @@ pub fn commands() -> Vec<Command> {
         // Wishlist::define(),
         HelloCommand::create_command().into(),
     ]
-}
-
-pub fn format_simple_message_response(message: &str) -> InteractionResponseData {
-    InteractionResponseDataBuilder::new()
-        .content(message.to_string())
-        .build()
 }
 
 pub trait DiscordCommand {

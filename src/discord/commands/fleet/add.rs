@@ -11,6 +11,7 @@ use twilight_model::{
             ApplicationCommand, ApplicationCommandAutocomplete,
         },
     },
+    channel::message::MessageFlags,
     http::interaction::InteractionResponseData,
 };
 use twilight_util::builder::{
@@ -22,7 +23,7 @@ use uuid::Uuid;
 use crate::{
     database,
     discord::{
-        api::DiscordApiError, format_simple_message_response,
+        api::DiscordApiError,
         twilight_interactions_extensions::InteractionAutocompleteOption, DiscordSubcommand,
     },
 };
@@ -117,10 +118,13 @@ impl AddCommand {
                 name: self.ship_name.clone(),
             });
         }
-        Ok(format_simple_message_response(&format!(
-            "Adding a {}{} to the fleet.",
-            ship_model.name, ship_name
-        )))
+        Ok(InteractionResponseDataBuilder::new()
+            .content(format!(
+                "Adding a {}{} to the fleet.",
+                ship_model.name, ship_name
+            ))
+            .flags(MessageFlags::EPHEMERAL)
+            .build())
     }
 
     #[tracing::instrument(
