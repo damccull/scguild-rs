@@ -23,8 +23,8 @@ use uuid::Uuid;
 use crate::{
     database,
     discord::{
-        api::DiscordApiError,
-        twilight_interactions_extensions::InteractionAutocompleteOption, DiscordSubcommand,
+        api::DiscordApiError, twilight_interactions_extensions::InteractionAutocompleteOption,
+        DiscordSubcommand,
     },
 };
 
