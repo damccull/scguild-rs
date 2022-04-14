@@ -5,6 +5,7 @@ use sqlx::PgPool;
 use tracing_actix_web::RequestId;
 use twilight_model::{
     application::interaction::{ApplicationCommand, ApplicationCommandAutocomplete, Interaction},
+    channel::message::MessageFlags,
     http::interaction::{InteractionResponse, InteractionResponseData, InteractionResponseType},
 };
 use twilight_util::builder::InteractionResponseDataBuilder;
@@ -54,8 +55,14 @@ pub async fn discord_api(
                 }))
         }
         Interaction::ApplicationCommand(c) => {
-            let response = application_command_handler(&c, &pool).await?;
-            let response_data = response;
+            let response = application_command_handler(&c, &pool).await;
+            let response_data = match response {
+                Ok(d) => d,
+                Err(e) => {
+                    tracing::error!("{}", e);
+                    format_user_error(request_id).await
+                }
+            };
 
             let response = InteractionResponse {
                 kind: InteractionResponseType::ChannelMessageWithSource,
@@ -81,7 +88,7 @@ pub async fn discord_api(
     }
 }
 
-async fn _format_user_error(request_id: RequestId) -> InteractionResponseData {
+async fn format_user_error(request_id: RequestId) -> InteractionResponseData {
     let body = format!(
         "Request ID: {}\n\n\
         What were you doing when the error occurred? Please provide as much detail as possible, \
@@ -97,7 +104,7 @@ async fn _format_user_error(request_id: RequestId) -> InteractionResponseData {
         [please open an issue on the github repo](<https://github.com/damccull/norseline-rs/issues/new?body={}>) \
         with this request id: {}",
         body, request_id
-    ));
+    )).flags(MessageFlags::EPHEMERAL);
 
     response.build()
 }
