@@ -12,7 +12,8 @@ use crate::error_chain_fmt;
 pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Error> {
     Ok(sqlx::query!(
         r#"
-        SELECT id, name, description
+        SELECT id, name, description, class_name, manufacturer_id, focus, career, role,
+        size, cargo_amount, crew, weapon_crew, operations_crew, mass, is_spaceship, is_vehicle, is_gravlev
         FROM ship_models
         "#
     )
@@ -24,6 +25,20 @@ pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Er
         id: row.id.to_owned(),
         name: row.name.to_owned(),
         description: row.description.to_owned(),
+        class_name: row.class_name.to_owned(),
+        manufacturer_id: row.manufacturer_id.to_owned(),
+        focus: row.focus.to_owned(),
+        career: row.career.to_owned(),
+        role: row.role.to_owned(),
+        size: row.size.to_owned(),
+        cargo: row.cargo_amount.to_owned(),
+        crew: row.crew.to_owned(),
+        weapon_crew: row.weapon_crew.to_owned(),
+        operations_crew: row.operations_crew.to_owned(),
+        mass: row.mass.to_owned(),
+        is_spaceship: row.is_spaceship.to_owned(),
+        is_vehicle: row.is_vehicle.to_owned(),
+        is_gravlev: row.is_gravlev.to_owned(),
     })
     .collect::<Vec<_>>())
 }
@@ -32,7 +47,8 @@ pub async fn all_ship_models(pool: &PgPool) -> Result<Vec<ShipModel>, anyhow::Er
 pub async fn get_ship_by_id(pool: &PgPool, id: Uuid) -> Result<ShipModel, DatabaseError> {
     let record = sqlx::query!(
         r#"
-        SELECT id, class_name, name, description
+        SELECT id, name, description, class_name, manufacturer_id, focus, career, role,
+        size, cargo_amount, crew, weapon_crew, operations_crew, mass, is_spaceship, is_vehicle, is_gravlev
         FROM ship_models
         WHERE id = $1
         "#,
@@ -49,6 +65,20 @@ pub async fn get_ship_by_id(pool: &PgPool, id: Uuid) -> Result<ShipModel, Databa
         id: record.id,
         name: record.name,
         description: record.description,
+        class_name: record.class_name.to_owned(),
+        manufacturer_id: record.manufacturer_id.to_owned(),
+        focus: record.focus.to_owned(),
+        career: record.career.to_owned(),
+        role: record.role.to_owned(),
+        size: record.size.to_owned(),
+        cargo: record.cargo_amount.to_owned(),
+        crew: record.crew.to_owned(),
+        weapon_crew: record.weapon_crew.to_owned(),
+        operations_crew: record.operations_crew.to_owned(),
+        mass: record.mass.to_owned(),
+        is_spaceship: record.is_spaceship.to_owned(),
+        is_vehicle: record.is_vehicle.to_owned(),
+        is_gravlev: record.is_gravlev.to_owned(),
     })
 }
 
@@ -58,7 +88,8 @@ pub async fn get_ships_by_model_name(
 ) -> Result<Vec<ShipModel>, DatabaseError> {
     let record = sqlx::query!(
         r#"
-        SELECT id, class_name, name, description
+        SELECT id, name, description, class_name, manufacturer_id, focus, career, role,
+        size, cargo_amount, crew, weapon_crew, operations_crew, mass, is_spaceship, is_vehicle, is_gravlev
         FROM ship_models
         WHERE lower(name) LIKE lower($1)
         "#,
@@ -75,6 +106,20 @@ pub async fn get_ships_by_model_name(
         id: row.id.to_owned(),
         name: row.name.to_owned(),
         description: row.description.to_owned(),
+        class_name: row.class_name.to_owned(),
+        manufacturer_id: row.manufacturer_id.to_owned(),
+        focus: row.focus.to_owned(),
+        career: row.career.to_owned(),
+        role: row.role.to_owned(),
+        size: row.size.to_owned(),
+        cargo: row.cargo_amount.to_owned(),
+        crew: row.crew.to_owned(),
+        weapon_crew: row.weapon_crew.to_owned(),
+        operations_crew: row.operations_crew.to_owned(),
+        mass: row.mass.to_owned(),
+        is_spaceship: row.is_spaceship.to_owned(),
+        is_vehicle: row.is_vehicle.to_owned(),
+        is_gravlev: row.is_gravlev.to_owned(),
     })
     .collect::<Vec<_>>();
 
