@@ -6,17 +6,22 @@ This is intended to be a discord /command interactions and graphql api server fo
 ## Method Two - Traditional Development Environment
 1. Fork this repo.
 2. Install your IDE/text editor of choice. [Visual Studio Code][vscode] is recommended.
-3. Install [rust][rustlang].
-4. Make appropriate changes, ensuring that both `cargo build` and `cargo test` complete successfully.
-4. Submit your PRs to the main project.
+3. Install [rust][rustlang-install].
+4. Make appropriate changes.
+5. Run each of these commands and fix any issues:
+    * `cargo fmt`
+    * `cargo test`
+    * `cargo build`
+    * `cargo sqlx prepare -- --lib` if you made changes to the database or sqlx queries
+6. Submit your PRs to the main project.
 
-# Running the Application
+<!-- # Running the Application
 ## Oauth2 / OpenID Connect Environment Variables
-The app uses environment variables to set secrets. This prevents accidental git commits and uploads to the internet. You will need to set these secrets before you can use the app's authentication features.
+The app uses environment variables to set secrets. This prevents accidental git commits and uploads to the internet. You will need to set these secrets before you can use the app's authentication features. -->
 
 # Important Information
 ## Pull Requests
-Please do not include any local development environment files in your pull requests.
+Please do not include any local development files in your pull requests, such as IDE configurations, vscode files, workspace files, etc.
 
 ## Port Information
 The server is set up to listen on port 5000 when running.
