@@ -2,8 +2,9 @@ use std::env;
 
 use xtask::{
     tasks::{
+        ci::ci,
         database::{docker_db, migrate_db},
-        distribute::dist, ci::ci,
+        distribute::dist,
     },
     DynError,
 };
