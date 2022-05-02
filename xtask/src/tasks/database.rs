@@ -96,7 +96,7 @@ pub fn migrate_db() -> Result<(), DynError> {
         .status();
 
     let migration_status2 = Command::new("sqlx")
-        .current_dir(project_root())
+        .current_dir(project_root().join("norseline-rs"))
         .env(
             "DATABASE_URL",
             format!(
@@ -107,7 +107,10 @@ pub fn migrate_db() -> Result<(), DynError> {
                 &db_config.db_name()
             ),
         )
-        .args(&["migrate", "--source", "norseline-rs/migrations", "run"])
+        .args(&[
+            "migrate",
+            "run",
+        ])
         .status();
 
     if migration_status1.is_err() || migration_status2.is_err() {
