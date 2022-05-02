@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
-  SQLX_VERSION: 0.5.11
+  SQLX_VERSION: 0.5.13
   SQLX_FEATURES: postgres,rustls
   APP_ENVIRONMENT: ci
 
@@ -67,8 +67,7 @@ jobs:
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
-          chmod +x ./scripts/init_db.sh
-          SKIP_DOCKER=true ./scripts/init_db.sh
+          cargo xtask migrate
 
       - name: Check sqlx metadata file
         run: cargo sqlx prepare --check -- --lib
@@ -149,8 +148,7 @@ jobs:
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
-          chmod +x ./scripts/init_db.sh
-          SKIP_DOCKER=true ./scripts/init_db.sh
+          cargo xtask migrate
 
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
@@ -214,8 +212,7 @@ jobs:
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
-          chmod +x ./scripts/init_db.sh
-          SKIP_DOCKER=true ./scripts/init_db.sh
+          cargo xtask migrate
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
