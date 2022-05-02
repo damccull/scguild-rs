@@ -20,6 +20,8 @@ Instead, these tasks are written directly in rust and the tool is aliased to `ca
 
 Type `cargo xtask` to see the tasks that can be used. Start here when looking to contribute.
 
+[More info on `cargo xtask`][cargo-xtask]
+
 ## How to Contribute
 1. Fork this repo.
 2. Install your IDE/text editor of choice. [Visual Studio Code][vscode] is recommended.
@@ -74,3 +76,4 @@ Commands will be grouped by common function. Below is a breakdown of each comman
 [wsl2]: https://docs.microsoft.com/en-us/windows/wsl/install-win10#update-to-wsl-2 "WSL2 Setup Information"
 [vscode]: https://code.visualstudio.com/ "Visual Studio Code"
 [rustlang-install]: https://www.rust-lang.org/learn/get-started "Install Rust"
+[cargo-xtask]: https://github.com/matklad/cargo-xtask "cargo-xtask"
