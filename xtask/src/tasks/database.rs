@@ -3,9 +3,6 @@ use std::{env, process::Command, thread, time::Duration};
 use crate::{check_psql_exists, check_sqlx_exists, project_root, DbConfig, DynError};
 
 pub fn docker_db() -> Result<(), DynError> {
-    let psql = "psql".to_string();
-    let docker = "docker".to_string();
-
     check_psql_exists()?;
 
     // Set up needed variables from the environment or use defaults
@@ -20,7 +17,7 @@ pub fn docker_db() -> Result<(), DynError> {
         println!("Skipping docker...");
     } else {
         println!("Starting docker image...");
-        let _status = Command::new(docker)
+        let mut _status = Command::new("docker")
             .current_dir(project_root())
             .args(&[
                 "run",
@@ -33,7 +30,7 @@ pub fn docker_db() -> Result<(), DynError> {
                 "-e",
                 &format!("POSTGRES_DB={}", &db_config.db_name()),
                 "-p",
-                &db_config.db_port(),
+                &format!("{}:5432", &db_config.db_port()),
                 "-d",
                 "postgres",
                 "postgres",
@@ -42,27 +39,8 @@ pub fn docker_db() -> Result<(), DynError> {
             ])
             .status()?;
 
-        let mut check_online = Command::new(psql);
-        let check_online = check_online
-            .current_dir(project_root())
-            .env("PGPASSWORD", &db_config.password())
-            .args([
-                "-h",
-                "localhost",
-                "-U",
-                &db_config.username(),
-                "-p",
-                &db_config.db_port(),
-                "-d",
-                "postgres",
-                "-c",
-                "\\q",
-            ]);
+        wait_for_postgres()?;
 
-        while check_online.status().is_err() {
-            println!("Postgres is still unavailable. Waiting to try again...");
-            thread::sleep(Duration::from_millis(1000));
-        }
         println!("Docker Postgres server online");
     }
 
@@ -73,6 +51,7 @@ pub fn docker_db() -> Result<(), DynError> {
 }
 
 pub fn migrate_db() -> Result<(), DynError> {
+    wait_for_postgres()?;
     check_sqlx_exists()?;
 
     // Set up needed variables from the environment or use defaults
@@ -116,5 +95,33 @@ pub fn migrate_db() -> Result<(), DynError> {
 
     println!("Migration completed.");
 
+    Ok(())
+}
+
+fn wait_for_postgres() -> Result<(), DynError> {
+    // Set up needed variables from the environment or use defaults
+    let db_config = DbConfig::get_config();
+
+    let mut check_online = Command::new("psql");
+    let check_online = check_online
+        .current_dir(project_root())
+        .env("PGPASSWORD", &db_config.password())
+        .args([
+            "-h",
+            "localhost",
+            "-U",
+            &db_config.username(),
+            "-p",
+            &db_config.db_port(),
+            "-d",
+            "postgres",
+            "-c",
+            "\\q",
+        ]);
+
+    while !check_online.status()?.success() {
+        println!("Postgres is still unavailable. Waiting to try again...");
+        thread::sleep(Duration::from_millis(1000));
+    }
     Ok(())
 }
