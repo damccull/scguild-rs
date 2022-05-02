@@ -3,7 +3,6 @@
 This is intended to be a discord /command interactions and graphql api server for Norseline.
 
 # Contributing
-## Method Two - Traditional Development Environment
 1. Fork this repo.
 2. Install your IDE/text editor of choice. [Visual Studio Code][vscode] is recommended.
 3. Install [rust][rustlang-install].
