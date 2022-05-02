@@ -1,7 +1,7 @@
 use std::{
-    env,
-    path::{PathBuf, Path},
-    process::{Command, Stdio}, fs,
+    env, fs,
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
 };
 
 use man::Manual;
@@ -53,9 +53,17 @@ fn dist_binary() -> Result<(), DynError> {
         return Err("cargo build failed".into());
     }
 
-    let dst = project_root().join("target/release/norseline-rs");
+    let mut dst = project_root().join("target/release/norseline");
 
-    fs::copy(&dst, dist_dir().join("norseline-rs"))?;
+    let mut destination = dist_dir().join("norseline");
+
+    #[cfg(windows)]
+    dst.set_extension("exe");
+    #[cfg(windows)]
+    destination.set_extension("exe");
+
+
+    fs::copy(&dst, destination)?;
 
     if Command::new("strip")
         .arg("--version")
