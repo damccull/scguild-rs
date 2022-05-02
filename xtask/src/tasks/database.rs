@@ -107,10 +107,7 @@ pub fn migrate_db() -> Result<(), DynError> {
                 &db_config.db_name()
             ),
         )
-        .args(&[
-            "migrate",
-            "run",
-        ])
+        .args(&["migrate", "run"])
         .status();
 
     if migration_status1.is_err() || migration_status2.is_err() {
