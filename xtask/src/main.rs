@@ -1,6 +1,5 @@
 use std::{
-    env,
-    fs,
+    env, fs,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     thread,
@@ -8,6 +7,7 @@ use std::{
 };
 
 use man::Manual;
+use xtask::DbConfig;
 
 type DynError = Box<dyn std::error::Error>;
 
@@ -44,12 +44,13 @@ fn dist() -> Result<(), DynError> {
     fs::create_dir_all(&dist_dir())?;
 
     dist_binary()?;
-    dist_manpage()?;
+    //dist_manpage()?;
 
     Ok(())
 }
 
 fn dist_binary() -> Result<(), DynError> {
+    // Get the `cargo` command and then build the release
     let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
     let status = Command::new(cargo)
         .current_dir(project_root())
@@ -60,17 +61,38 @@ fn dist_binary() -> Result<(), DynError> {
         return Err("cargo build failed".into());
     }
 
-    let mut dst = project_root().join("target/release/norseline");
+    // Set file paths based on the architecture
+    #[allow(unused_mut)]
+    let mut distributable = project_root().join("target/release/norseline");
 
+    #[allow(unused_mut)]
     let mut destination = dist_dir().join("norseline");
 
-    #[cfg(target_os = "windows")]
-    dst.set_extension("exe");
-    #[cfg(target_os = "windows")]
+    #[cfg(windows)]
+    distributable.set_extension("exe");
+    #[cfg(windows)]
     destination.set_extension("exe");
 
-    fs::copy(&dst, destination)?;
+    // Copy the binary
+    fs::copy(&distributable, destination)?;
 
+    // Copy config files
+    let config_src = project_root().join("norseline-rs/configuration");
+    let config_dest = dist_dir().join("configuration");
+    fs::create_dir(config_dest)?;
+
+    for f in fs::read_dir(config_src)? {
+        let f = f?;
+        if f.file_name().eq("local.yml") {
+            continue;
+        }
+        fs::copy(
+            f.path(),
+            dist_dir().join("configuration").join(f.file_name()),
+        )?;
+    }
+
+    // Strip the binary
     if Command::new("strip")
         .arg("--version")
         .stdout(Stdio::null())
@@ -78,7 +100,7 @@ fn dist_binary() -> Result<(), DynError> {
         .is_ok()
     {
         eprintln!("stripping the binary");
-        let status = Command::new("strip").arg(&dst).status()?;
+        let status = Command::new("strip").arg(&distributable).status()?;
         if !status.success() {
             return Err("strip failed".into());
         }
@@ -91,14 +113,13 @@ fn dist_binary() -> Result<(), DynError> {
 
 fn docker_db() -> Result<(), DynError> {
     let psql = "psql".to_string();
+    let docker = "docker".to_string();
 
     check_psql_exists()?;
-    check_sqlx_exists()?;
 
-    let db_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "postgres".to_string());
-    let db_password = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "password".to_string());
-    let db_name = env::var("POSTGRES_DB").unwrap_or_else(|_| "norseline".to_string());
-    let db_port = env::var("POSTGRES_PORT").unwrap_or_else(|_| "5432".to_string());
+    // Set up needed variables from the environment or use defaults
+    let db_config = DbConfig::get_config();
+
     let skip_docker = env::var("SKIP_DOCKER")
         .unwrap_or_else(|_| "false".to_string())
         .parse::<bool>()
@@ -108,20 +129,20 @@ fn docker_db() -> Result<(), DynError> {
         println!("Skipping docker...");
     } else {
         println!("Starting docker image...");
-        let _status = Command::new("docker")
+        let _status = Command::new(docker)
             .current_dir(project_root())
             .args(&[
                 "run",
                 "--name",
                 "norseline_db",
                 "-e",
-                &format!("POSTGRES_USER={}", &db_user),
+                &format!("POSTGRES_USER={}", &db_config.username()),
                 "-e",
-                &format!("POSTGRES_PASSWORD={}", &db_password),
+                &format!("POSTGRES_PASSWORD={}", &db_config.password()),
                 "-e",
-                &format!("POSTGRES_DB={}", &db_name),
+                &format!("POSTGRES_DB={}", &db_config.db_name()),
                 "-p",
-                &db_port,
+                &db_config.db_port(),
                 "-d",
                 "postgres",
                 "postgres",
@@ -133,14 +154,14 @@ fn docker_db() -> Result<(), DynError> {
         let mut check_online = Command::new(psql);
         let check_online = check_online
             .current_dir(project_root())
-            .env("PGPASSWORD", &db_password)
+            .env("PGPASSWORD", &db_config.password())
             .args([
                 "-h",
                 "localhost",
                 "-U",
-                &db_user,
+                &db_config.username(),
                 "-p",
-                &db_port,
+                &db_config.db_port(),
                 "-d",
                 "postgres",
                 "-c",
@@ -151,8 +172,20 @@ fn docker_db() -> Result<(), DynError> {
             println!("Postgres is still unavailable. Waiting to try again...");
             thread::sleep(Duration::from_millis(1000));
         }
-        println!("Docker PostGres server online");
+        println!("Docker Postgres server online");
     }
+
+    // Migrate the database automatically as part of initialization
+    migrate_db()?;
+
+    Ok(())
+}
+
+fn migrate_db() -> Result<(), DynError> {
+    check_sqlx_exists()?;
+
+    // Set up needed variables from the environment or use defaults
+    let db_config = DbConfig::get_config();
 
     println!("Migrating database...");
 
@@ -162,7 +195,10 @@ fn docker_db() -> Result<(), DynError> {
             "DATABASE_URL",
             format!(
                 "postgres://{}:{}@localhost:{}/{}",
-                &db_user, &db_password, &db_port, &db_name
+                &db_config.username(),
+                &db_config.password(),
+                &db_config.db_port(),
+                &db_config.db_name()
             ),
         )
         .args(&["database", "create"])
@@ -174,7 +210,10 @@ fn docker_db() -> Result<(), DynError> {
             "DATABASE_URL",
             format!(
                 "postgres://{}:{}@localhost:{}/{}",
-                &db_user, &db_password, &db_port, &db_name
+                &db_config.username(),
+                &db_config.password(),
+                &db_config.db_port(),
+                &db_config.db_name()
             ),
         )
         .args(&["migrate", "--source", "norseline-rs/migrations", "run"])
@@ -188,11 +227,8 @@ fn docker_db() -> Result<(), DynError> {
 
     Ok(())
 }
-fn migrate_db() -> Result<(), DynError> {
-    todo!();
-}
 
-fn dist_manpage() -> Result<(), DynError> {
+fn _dist_manpage() -> Result<(), DynError> {
     let page = Manual::new("norseline-rs")
         .about("Runs a discord bot and website for Star Citizen guild content.")
         .render();
