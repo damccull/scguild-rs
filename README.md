@@ -2,7 +2,7 @@
 # Description
 This is intended to be a discord /command interactions and graphql api server for Norseline.
 
-# Prerequisites
+# Development Prerequisites
 * Docker / Docker Desktop
     * This project is set up to use Docker Desktop for development. By default the xtasks (see below) are written under the assumption docker will be available.
 * Postgres CLI
