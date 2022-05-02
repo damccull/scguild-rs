@@ -70,6 +70,7 @@ jobs:
           cargo xtask migrate
 
       - name: Check sqlx metadata file
+        working-directory: ./norseline-rs
         run: cargo sqlx prepare --check -- --lib
 
       - name: Run cargo test
