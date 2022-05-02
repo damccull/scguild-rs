@@ -7,8 +7,8 @@ This is intended to be a discord /command interactions and graphql api server fo
     * This project is set up to use Docker Desktop for development. By default the xtasks (see below) are written under the assumption docker will be available.
 * Postgres CLI
     * This project assumes the development machine has the `psql` tool installed to setup a postgres docker image.
-* sqlx CLI
-    * This project uses the rust sqlx library and assumes the development machine has the sqlx-cli installed to handle database migrations.
+* sqlx CLI v0.5.13
+    * This project uses the rust sqlx library and assumes the development machine has the sqlx-cli installed to handle database migrations. Please use the correct version.
 
 None of these are technically required if you want to run your own postgres server on another machine and manually run the SQL migration files. `cargo xtask` commands expect these to be present, however.
 
