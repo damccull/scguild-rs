@@ -108,7 +108,7 @@ fn docker_db() -> Result<(), DynError> {
         println!("Skipping docker...");
     } else {
         println!("Starting docker image...");
-        let status = Command::new("docker")
+        let _status = Command::new("docker")
             .current_dir(project_root())
             .args(&[
                 "run",
