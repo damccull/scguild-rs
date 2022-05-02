@@ -1,9 +1,8 @@
 use std::{
     env,
-    fmt::Error,
     fs,
     path::{Path, PathBuf},
-    process::{Command, ExitStatus, Stdio},
+    process::{Command, Stdio},
     thread,
     time::Duration,
 };
