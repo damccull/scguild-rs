@@ -1,5 +1,1 @@
 **/target
-*.sqlite3
-*.db
-
-configuration/local.yml
