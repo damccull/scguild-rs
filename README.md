@@ -23,16 +23,12 @@ Type `cargo xtask` to see the tasks that can be used. Start here when looking to
 [More info on `cargo xtask`][cargo-xtask]
 
 ## How to Contribute
-1. Fork this repo.
-2. Install your IDE/text editor of choice. [Visual Studio Code][vscode] is recommended.
-3. Install [rust][rustlang-install].
+1. Fork this repo
+2. Install your IDE/text editor of choice. [Visual Studio Code][vscode] is recommended
+3. Install [rust][rustlang-install]
 4. Make appropriate changes.
-5. Run each of these commands and fix any issues:
-    * `cargo fmt`
-    * `cargo test`
-    * `cargo build`
-    * `cargo sqlx prepare -- --lib` if you made changes to the database or sqlx queries
-6. Submit your PRs to the main project.
+5. Run `cargo xtask ci` and fix any reported errors
+6. Submit your PRs to the main project
 
 
 ## Pull Requests
