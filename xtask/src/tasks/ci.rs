@@ -18,6 +18,11 @@ pub fn ci() -> Result<(), DynError> {
     println!("{}", std::str::from_utf8(&build.stdout)?);
     println!("{}", std::str::from_utf8(&build.stderr)?);
 
+    println!("Running `cargo test`...");
+    let test = Command::new("cargo").args(["test"]).output()?;
+    println!("{}", std::str::from_utf8(&test.stdout)?);
+    println!("{}", std::str::from_utf8(&test.stderr)?);
+
     println!("Running `cargo audit`...");
     let audit = Command::new("cargo").args(["audit"]).output()?;
     println!("{}", std::str::from_utf8(&audit.stdout)?);
