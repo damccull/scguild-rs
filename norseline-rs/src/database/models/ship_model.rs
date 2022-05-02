@@ -14,7 +14,7 @@ pub struct ShipModel {
     /// A description of the ship model.
     pub description: Option<String>,
     /// The focused purpose of the ship model.
-    pub focus: Option<String>,// Parse Description, Probably with regex
+    pub focus: Option<String>, // Parse Description, Probably with regex
     /// The career of the ship model.
     pub career: String,
     /// The role of the ship model.
@@ -22,7 +22,7 @@ pub struct ShipModel {
     /// The size of the ship.
     pub size: i32,
     /// The maximum cargo the ship can carry.
-    pub cargo: i32, 
+    pub cargo: i32,
     /// The suggested number of crew for the ship.
     pub crew: i32,
     /// The number of weapons crew to fully man all the ship's weapons.
