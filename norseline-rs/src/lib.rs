@@ -2,6 +2,7 @@ pub mod application;
 pub mod configuration;
 pub mod database;
 pub mod discord;
+pub mod es_datastore;
 pub mod middleware;
 pub mod serde_helpers;
 pub mod telemetry;
