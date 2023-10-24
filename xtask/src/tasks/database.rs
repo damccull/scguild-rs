@@ -22,7 +22,7 @@ pub fn docker_db() -> Result<(), DynError> {
             .args(&[
                 "run",
                 "--name",
-                "norseline_db",
+                "scguild_db",
                 "-e",
                 &format!("POSTGRES_USER={}", &db_config.username()),
                 "-e",
@@ -75,7 +75,7 @@ pub fn migrate_db() -> Result<(), DynError> {
         .status();
 
     let migration_status2 = Command::new("sqlx")
-        .current_dir(project_root().join("norseline-rs"))
+        .current_dir(project_root().join("scguild-rs"))
         .env(
             "DATABASE_URL",
             format!(

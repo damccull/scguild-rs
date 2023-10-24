@@ -1,4 +1,4 @@
-use norseline::{
+use scguild::{
     application::Application,
     configuration::get_configuration,
     telemetry::{get_subscriber, init_subscriber},
@@ -7,7 +7,7 @@ use norseline::{
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Set up logging using tracing, tracing-subscriber, and tracing-bunyan-formatter
-    let subscriber = get_subscriber("norseline".into(), "info".into(), std::io::stdout);
+    let subscriber = get_subscriber("scguild".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
 
     // Read the configuration, panicking if it can't be read

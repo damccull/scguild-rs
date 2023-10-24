@@ -6,22 +6,22 @@ use crate::{project_root, DynError};
 pub fn ci() -> Result<(), DynError> {
     println!("Running `cargo check`...");
     let check = Command::new("cargo")
-        .args(["check", "-p", "norseline"])
+        .args(["check", "-p", "scguild"])
         .status()?;
 
     println!("Running `cargo clippy`...");
     let clippy = Command::new("cargo")
-        .args(["clippy", "-p", "norseline"])
+        .args(["clippy", "-p", "scguild"])
         .status()?;
 
     println!("Running `cargo build`...");
     let build = Command::new("cargo")
-        .args(["build", "-p", "norseline"])
+        .args(["build", "-p", "scguild"])
         .status()?;
 
     println!("Running `cargo test`...");
     let test = Command::new("cargo")
-        .args(["test", "-p", "norseline"])
+        .args(["test", "-p", "scguild"])
         .status()?;
 
     println!("Running `cargo audit`...");
@@ -32,7 +32,7 @@ pub fn ci() -> Result<(), DynError> {
 
     println!("Running `cargo sqlx prepare --check -- --lib`...");
     let sqlx_prep = Command::new("cargo")
-        .current_dir(project_root().join("norseline-rs"))
+        .current_dir(project_root().join("scguild-rs"))
         .args(["sqlx", "prepare", "--check", "--", "--lib"])
         .status()?;
 

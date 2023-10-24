@@ -1,6 +1,6 @@
-[![CI](https://github.com/damccull/norseline-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/damccull/norseline-rs/actions/workflows/ci.yml)[![Docker Package Build and Push](https://github.com/damccull/norseline-rs/actions/workflows/deploy-gh-package.yml/badge.svg)](https://github.com/damccull/norseline-rs/actions/workflows/deploy-gh-package.yml)
+[![CI](https://github.com/damccull/scguild-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/damccull/scguild-rs/actions/workflows/ci.yml)[![Docker Package Build and Push](https://github.com/damccull/scguild-rs/actions/workflows/deploy-gh-package.yml/badge.svg)](https://github.com/damccull/scguild-rs/actions/workflows/deploy-gh-package.yml)
 # Description
-This is intended to be a discord /command interactions and graphql api server for Norseline.
+This is intended to be a discord /command interactions and graphql api server for scguild.
 
 # Development Prerequisites
 * Docker / Docker Desktop
@@ -14,7 +14,7 @@ None of these are technically required if you want to run your own postgres serv
 
 # Contributing
 ## cargo xtask
-This cargo workspace contains two projects: `norseline-rs` and `xtask`. `xtask` is a simple, bespoke CLI tool written in rust to perform various tasks for this repository that might normally be handled by a makefile or similar script runner.
+This cargo workspace contains two projects: `scguild-rs` and `xtask`. `xtask` is a simple, bespoke CLI tool written in rust to perform various tasks for this repository that might normally be handled by a makefile or similar script runner.
 
 Instead, these tasks are written directly in rust and the tool is aliased to `cargo xtask` for ease of use anywhere in the repository.
 

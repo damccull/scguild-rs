@@ -31,10 +31,10 @@ pub fn dist_binary() -> Result<(), DynError> {
 
     // Set file paths based on the architecture
     #[allow(unused_mut)]
-    let mut distributable = project_root().join("target/release/norseline");
+    let mut distributable = project_root().join("target/release/scguild");
 
     #[allow(unused_mut)]
-    let mut destination = dist_dir().join("norseline");
+    let mut destination = dist_dir().join("scguild");
 
     #[cfg(windows)]
     distributable.set_extension("exe");
@@ -45,7 +45,7 @@ pub fn dist_binary() -> Result<(), DynError> {
     fs::copy(&distributable, destination)?;
 
     // Copy config files
-    let config_src = project_root().join("norseline-rs/configuration");
+    let config_src = project_root().join("scguild-rs/configuration");
     let config_dest = dist_dir().join("configuration");
     fs::create_dir(config_dest)?;
 
@@ -80,9 +80,9 @@ pub fn dist_binary() -> Result<(), DynError> {
 }
 
 pub fn dist_manpage() -> Result<(), DynError> {
-    let page = Manual::new("norseline-rs")
+    let page = Manual::new("scguild-rs")
         .about("Runs a discord bot and website for Star Citizen guild content.")
         .render();
-    fs::write(dist_dir().join("norseline-rs.man"), &page)?;
+    fs::write(dist_dir().join("scguild-rs.man"), &page)?;
     Ok(())
 }

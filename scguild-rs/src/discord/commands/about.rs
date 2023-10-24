@@ -30,7 +30,7 @@ impl SlashCommand for About {
                 allowed_mentions: None,
                 flags: None,
                 tts: None,
-                content: Some("Norseline Discord Bot v1. It is probably still lame.".to_string()),
+                content: Some("scguild Discord Bot v1. It is probably still lame.".to_string()),
                 embeds: Default::default(),
                 components: Default::default(),
             },

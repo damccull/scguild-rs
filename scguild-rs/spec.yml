@@ -1,16 +1,16 @@
 #! Digital Ocean app spec
 
-name: norseline
+name: scguild
 region: nyc1
 services:
-  - name: norseline
+  - name: scguild
     # Relative to repo root
     dockerfile_path: Dockerfile
     source_dir: .
     github:
       branch: main
       deploy_on_push: true
-      repo: damccull/norseline-rs
+      repo: damccull/scguild-rs
     health_check:
       # Path to the health-check endpoint
       http_path: /health_check
@@ -40,7 +40,7 @@ services:
         value: ${newsletter.DATABASE}
 databases:
   - engine: PG
-    name: norseline
+    name: scguild
     num_nodes: 1
     size: db-s-dev-database
     version: "12"

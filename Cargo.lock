@@ -1505,54 +1505,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "norseline"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-http",
- "actix-rt",
- "actix-service",
- "actix-web",
- "anyhow",
- "async-trait",
- "chrono",
- "claim",
- "config",
- "ed25519-dalek",
- "fake",
- "fnv",
- "futures",
- "hex",
- "linkify",
- "mime",
- "once_cell",
- "quickcheck",
- "quickcheck_macros",
- "rand 0.7.3",
- "rand 0.8.5",
- "reqwest",
- "serde",
- "serde-aux",
- "serde_json",
- "sqlx",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-actix-web",
- "tracing-bunyan-formatter",
- "tracing-futures",
- "tracing-log",
- "tracing-subscriber",
- "twilight-http",
- "twilight-interactions",
- "twilight-model",
- "twilight-util",
- "urlencoding",
- "uuid",
- "wiremock",
-]
-
-[[package]]
 name = "nu-ansi-term"
 version = "0.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2144,6 +2096,54 @@ name = "ryu"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b4b9743ed687d4b4bcedf9ff5eaa7398495ae14e61cba0a295704edbc7decde"
+
+[[package]]
+name = "scguild"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-http",
+ "actix-rt",
+ "actix-service",
+ "actix-web",
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "claim",
+ "config",
+ "ed25519-dalek",
+ "fake",
+ "fnv",
+ "futures",
+ "hex",
+ "linkify",
+ "mime",
+ "once_cell",
+ "quickcheck",
+ "quickcheck_macros",
+ "rand 0.7.3",
+ "rand 0.8.5",
+ "reqwest",
+ "serde",
+ "serde-aux",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-actix-web",
+ "tracing-bunyan-formatter",
+ "tracing-futures",
+ "tracing-log",
+ "tracing-subscriber",
+ "twilight-http",
+ "twilight-interactions",
+ "twilight-model",
+ "twilight-util",
+ "urlencoding",
+ "uuid",
+ "wiremock",
+]
 
 [[package]]
 name = "schannel"

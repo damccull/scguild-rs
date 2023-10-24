@@ -101,7 +101,7 @@ async fn format_user_error(request_id: RequestId) -> InteractionResponseData {
     let response = InteractionResponseDataBuilder::new().content(format!(
         "There was an error processing your request. \
         If this happens repeatedly, \
-        [please open an issue on the github repo](<https://github.com/damccull/norseline-rs/issues/new?body={}>) \
+        [please open an issue on the github repo](<https://github.com/damccull/scguild-rs/issues/new?body={}>) \
         with this request id: {}",
         body, request_id
     )).flags(MessageFlags::EPHEMERAL);

@@ -15,7 +15,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Build the app
 COPY . .
 ENV SQLX_OFFLINE true
-RUN cargo build --release --bin norseline
+RUN cargo build --release --bin scguild
 
 
 FROM debian:bullseye-slim AS runtime
@@ -26,7 +26,7 @@ RUN apt-get update -y \
     && apt-get autoremove --purge -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/norseline norseline
+COPY --from=builder /app/target/release/scguild scguild
 COPY configuration configuration
 ENV APP_ENVIRONMENT production
-ENTRYPOINT [ "./norseline" ]
+ENTRYPOINT [ "./scguild" ]

@@ -1,2 +1,3 @@
 [workspace]
-members = ["norseline-rs", "xtask"]
+resolver = "2"
+members = ["scguild-rs", "xtask"]

@@ -1449,7 +1449,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "norseline"
+name = "scguild"
 version = "0.1.0"
 dependencies = [
  "actix-cors",

@@ -2,7 +2,7 @@ use std::env;
 
 const DEFAULT_DB_USER: &str = "postgres";
 const DEFAULT_DB_PASSWORD: &str = "password";
-const DEFAULT_DB_NAME: &str = "norseline";
+const DEFAULT_DB_NAME: &str = "scguild";
 const DEFAULT_DB_PORT: &str = "5432";
 
 pub struct DbConfig {

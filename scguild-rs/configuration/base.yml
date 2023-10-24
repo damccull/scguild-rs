@@ -5,7 +5,7 @@ database:
   port: 5432
   username: "postgres"
   password: "password"
-  database_name: "norseline"
+  database_name: "scguild"
   require_ssl: false
 discord:
   application_id: 000000000000000000

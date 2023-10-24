@@ -1,10 +1,10 @@
-use norseline::{
+use once_cell::sync::Lazy;
+use rand_dalek::rngs::OsRng;
+use scguild::{
     application::{get_connection_pool, Application},
     configuration::{get_configuration, DatabaseSettings},
     telemetry::{get_subscriber, init_subscriber},
 };
-use once_cell::sync::Lazy;
-use rand_dalek::rngs::OsRng;
 use sqlx::{postgres::PgPoolOptions, ConnectOptions, Connection, Executor, PgConnection, PgPool};
 use tracing::log::LevelFilter;
 use uuid::Uuid;
