@@ -1,16 +1,24 @@
 use anyhow::Context as _;
 use poise::serenity_prelude as serenity;
+use scguild::{Context, Data, Error};
 use shuttle_poise::ShuttlePoise;
 use shuttle_secrets::SecretStore;
-
-struct Data {} // User data, which is stored and accessible in all command invocations
-type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, Data, Error>;
 
 /// Responds with "world!"
 #[poise::command(slash_command)]
 async fn hello(ctx: Context<'_>) -> Result<(), Error> {
     ctx.say("world!").await?;
+    Ok(())
+}
+
+#[poise::command(slash_command)]
+async fn age(
+    ctx: Context<'_>,
+    #[description = "Selected user"] user: Option<serenity::User>,
+) -> Result<(), Error> {
+    let u = user.as_ref().unwrap_or_else(|| ctx.author());
+    let response = format!("{}'s account was created at {}", u.name, u.created_at());
+    ctx.say(response).await?;
     Ok(())
 }
 
@@ -23,7 +31,7 @@ async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> Shuttle
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello()],
+            commands: vec![hello(), age()],
             ..Default::default()
         })
         .token(discord_token)
