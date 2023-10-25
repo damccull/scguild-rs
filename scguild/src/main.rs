@@ -1,12 +1,13 @@
 use anyhow::Context as _;
 use poise::serenity_prelude as serenity;
-use scguild::{Context, Data, Error};
+use scguild::{fleet, Context, Data};
 use shuttle_poise::ShuttlePoise;
 use shuttle_secrets::SecretStore;
+use tracing::instrument;
 
 /// Responds with "world!"
 #[poise::command(slash_command)]
-async fn hello(ctx: Context<'_>) -> Result<(), Error> {
+async fn hello(ctx: Context<'_>) -> Result<(), anyhow::Error> {
     ctx.say("world!").await?;
     Ok(())
 }
@@ -15,7 +16,7 @@ async fn hello(ctx: Context<'_>) -> Result<(), Error> {
 async fn age(
     ctx: Context<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
-) -> Result<(), Error> {
+) -> Result<(), anyhow::Error> {
     let u = user.as_ref().unwrap_or_else(|| ctx.author());
     let response = format!("{}'s account was created at {}", u.name, u.created_at());
     ctx.say(response).await?;
@@ -23,7 +24,14 @@ async fn age(
 }
 
 #[shuttle_runtime::main]
-async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> ShuttlePoise<Data, Error> {
+#[instrument(name = "SCGuild", skip(secret_store))]
+async fn poise(
+    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+) -> ShuttlePoise<Data, anyhow::Error> {
+    // Set up tracing
+    //let subscriber = telemetry::get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
+    //telemetry::init_subscriber(subscriber);
+
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
         .get("DISCORD_TOKEN")
@@ -31,7 +39,12 @@ async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> Shuttle
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello(), age()],
+            commands: {
+                let mut cmds = vec![hello(), age()];
+                // Add fleet commands
+                cmds.extend(fleet::add_commands());
+                cmds
+            },
             ..Default::default()
         })
         .token(discord_token)
@@ -45,6 +58,6 @@ async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> Shuttle
         .build()
         .await
         .map_err(shuttle_runtime::CustomError::new)?;
-
+    tracing::info!("Startup successful.");
     Ok(framework.into())
 }
