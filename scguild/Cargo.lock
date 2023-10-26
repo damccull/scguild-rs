@@ -1977,6 +1977,7 @@ dependencies = [
  "axum-macros",
  "axum_session",
  "config",
+ "http",
  "hyper",
  "poise",
  "redis",

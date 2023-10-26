@@ -12,6 +12,7 @@ use secrecy::{ExposeSecret, Secret};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
 use crate::{
+    authentication::reject_anonymous_user,
     configuration::{DatabaseSettings, Settings},
     telemetry::RouterExt,
 };
@@ -90,7 +91,7 @@ pub fn run(
     // Admin section routes
     let router_admin = Router::new()
         .route("/admin/dashboard", get(admin_dashboard))
-        .layer(middleware::from_fn(reject_anonymous_users));
+        .layer(middleware::from_fn(reject_anonymous_user));
 
     // All routes that care about a session
     let router_with_session = Router::new()
