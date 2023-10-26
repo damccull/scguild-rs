@@ -1,16 +1,11 @@
-use anyhow::Context as _;
+use std::fmt::Debug;
+use std::fmt::Display;
+
 use poise::serenity_prelude as serenity;
-use scguild::{fleet, Context, Data};
-use shuttle_poise::ShuttlePoise;
-use shuttle_secrets::SecretStore;
+use tokio::task::JoinError;
 use tracing::instrument;
 
-/// Responds with "world!"
-#[poise::command(slash_command)]
-async fn hello(ctx: Context<'_>) -> Result<(), anyhow::Error> {
-    ctx.say("world!").await?;
-    Ok(())
-}
+use scguild::{telemetry, Context};
 
 #[poise::command(slash_command)]
 async fn age(
@@ -23,41 +18,46 @@ async fn age(
     Ok(())
 }
 
-#[shuttle_runtime::main]
-#[instrument(name = "SCGuild", skip(secret_store))]
-async fn poise(
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> ShuttlePoise<Data, anyhow::Error> {
+#[tokio::main]
+#[instrument(name = "SCGuild")]
+async fn main() -> Result<(), anyhow::Error> {
     // Set up tracing
-    //let subscriber = telemetry::get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
-    //telemetry::init_subscriber(subscriber);
+    let subscriber = telemetry::get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
+    telemetry::init_subscriber(subscriber);
 
-    // Get the discord token set in `Secrets.toml`
-    let discord_token = secret_store
-        .get("DISCORD_TOKEN")
-        .context("'DISCORD_TOKEN' was not found")?;
+    // Set up configuration
+    let configuration = get_configuration().expect("failed to read configuration");
 
-    let framework = poise::Framework::builder()
-        .options(poise::FrameworkOptions {
-            commands: {
-                let mut cmds = vec![hello(), age()];
-                // Add fleet commands
-                cmds.extend(fleet::add_commands());
-                cmds
-            },
-            ..Default::default()
-        })
-        .token(discord_token)
-        .intents(serenity::GatewayIntents::non_privileged())
-        .setup(|ctx, _ready, framework| {
-            Box::pin(async move {
-                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data {})
-            })
-        })
-        .build()
-        .await
-        .map_err(shuttle_runtime::CustomError::new)?;
-    tracing::info!("Startup successful.");
-    Ok(framework.into())
+    let app = Application::build(configuration.clone()).await?;
+    let app_task = tokio::spawn(app.run_until_stopped());
+
+    tokio::select! {
+        o = app_task => report_exit("Website", o),
+    }
+
+    Ok(())
+}
+
+fn report_exit(task_name: &str, outcome: Result<Result<(), impl Debug + Display>, JoinError>) {
+    match outcome {
+        Ok(Ok(())) => {
+            tracing::info!("{} has exited", task_name)
+        }
+        Ok(Err(e)) => {
+            tracing::error!(
+                error.cause_chain = ?e,
+                error.message = %e,
+                "{} failed",
+                task_name
+            )
+        }
+        Err(e) => {
+            tracing::error!(
+                error.cause_chain = ?e,
+                error.message = %e,
+                "{} task failed to complete",
+                task_name
+            )
+        }
+    }
 }
