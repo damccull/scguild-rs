@@ -6,6 +6,8 @@ use sqlx::{
     ConnectOptions,
 };
 
+/// Reads the configuration form disk and the environment, and then returns
+/// a [`Settings`] struct with the configuration.
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let base_path = std::env::current_dir().expect("Failed to determine the current directory");
     let configuration_directory = base_path.join("configuration");
@@ -39,6 +41,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     settings
 }
 
+/// The top level settings container.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Settings {
     pub application: ApplicationSettings,
@@ -46,6 +49,7 @@ pub struct Settings {
     pub redis: RedisSettings,
 }
 
+/// Settings specific to the application itself.
 #[derive(Clone, Debug, Deserialize)]
 pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
@@ -55,6 +59,7 @@ pub struct ApplicationSettings {
     pub hmac_secret: Secret<String>,
 }
 
+/// Settings related to the database.
 #[derive(Clone, Debug, Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
@@ -67,6 +72,7 @@ pub struct DatabaseSettings {
 }
 
 impl DatabaseSettings {
+    /// Get a [`PgConnectOptions`] with the database specified.
     pub fn with_db(&self) -> PgConnectOptions {
         let mut options = self.without_db().database(&self.database_name);
 
@@ -76,6 +82,7 @@ impl DatabaseSettings {
         options
     }
 
+    /// Get a [`PgConnectOptions`] without the database specified.
     pub fn without_db(&self) -> PgConnectOptions {
         let ssl_mode = if self.require_ssl {
             PgSslMode::Require
@@ -92,12 +99,13 @@ impl DatabaseSettings {
     }
 }
 
+/// Settings related to the redis cache.
 #[derive(Clone, Debug, Deserialize)]
 pub struct RedisSettings {
     pub uri: Secret<String>,
 }
 
-/// The possible runtime environments for this application
+/// The possible runtime environments for this application.
 pub enum Environment {
     Local,
     Production,
