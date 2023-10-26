@@ -1,6 +1,10 @@
-use secrecy::Secret;
+use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
+use sqlx::{
+    postgres::{PgConnectOptions, PgSslMode},
+    ConnectOptions,
+};
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let base_path = std::env::current_dir().expect("Failed to determine the current directory");
@@ -39,6 +43,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 pub struct Settings {
     pub application: ApplicationSettings,
     pub database: DatabaseSettings,
+    pub redis: RedisSettings,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -49,6 +54,7 @@ pub struct ApplicationSettings {
     pub base_url: String,
     pub hmac_secret: Secret<String>,
 }
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
@@ -58,6 +64,37 @@ pub struct DatabaseSettings {
     pub host: String,
     pub database_name: String,
     pub require_ssl: bool,
+}
+
+impl DatabaseSettings {
+    pub fn with_db(&self) -> PgConnectOptions {
+        let mut options = self.without_db().database(&self.database_name);
+
+        // Set sqlx log level to TRACE to prevent log spam
+        options.log_statements(tracing::log::LevelFilter::Trace);
+
+        options
+    }
+
+    pub fn without_db(&self) -> PgConnectOptions {
+        let ssl_mode = if self.require_ssl {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Disable
+        };
+
+        PgConnectOptions::new()
+            .host(&self.host)
+            .username(&self.username)
+            .password(self.password.expose_secret())
+            .port(self.port)
+            .ssl_mode(ssl_mode)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct RedisSettings {
+    pub uri: Secret<String>,
 }
 
 /// The possible runtime environments for this application

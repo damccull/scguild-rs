@@ -23,3 +23,14 @@ config = "0.13.3"
 secrecy = { version = "0.8.0", features = ["serde"] }
 serde = { version = "1.0.190", features = ["serde_derive"] }
 serde-aux = "4.2.0"
+axum = { version = "0.6.20", features = ["tracing"] }
+axum-extra = { version = "0.8.0", features = ["cookie"] }
+axum-macros = "0.3.8"
+axum_session = { version = "0.8.0", default-features = false, features = ["redis-db"] }
+redis = { version = "0.23.3", features = ["tokio-comp"] }
+sqlx = { version = "0.7.2", default-features = false, features = ["macros", "postgres", "uuid", "chrono", "migrate", "runtime-tokio-rustls"] }
+thiserror = "1.0.50"
+uuid = { version = "1.5.0", features = ["v4", "serde"] }
+hyper = "0.14.27"
+tower = "0.4.13"
+tower-http = { version = "0.4.4", features = ["trace", "request-id", "util"] }

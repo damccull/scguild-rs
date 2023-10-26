@@ -1,11 +1,19 @@
+use axum::Router;
+use hyper::body::HttpBody;
 use tokio::task::JoinHandle;
+use tower::ServiceBuilder;
+use tower_http::{
+    request_id::MakeRequestUuid,
+    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
+    ServiceBuilderExt,
+};
 //use tower::ServiceBuilder;
 //use tower_http::{
 //    request_id::MakeRequestUuid,
 //    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
 //    ServiceBuilderExt,
 //};
-use tracing::Subscriber;
+use tracing::{Level, Subscriber};
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_subscriber::{fmt::MakeWriter, prelude::*, EnvFilter, Registry};
 
@@ -58,28 +66,29 @@ where
 }
 
 pub trait RouterExt {
+    /// Adds a router layer to axum to enable tracing for routes.
     fn add_axum_tracing_layer(self) -> Self;
 }
 
-//impl<S, B> RouterExt for Router<S, B>
-//where
-//    B: HttpBody + Send + 'static,
-//    S: Clone + Send + Sync + 'static,
-//{
-//    fn add_axum_tracing_layer(self) -> Self {
-//        self.layer(
-//            ServiceBuilder::new()
-//                .set_x_request_id(MakeRequestUuid)
-//                .layer(
-//                    TraceLayer::new_for_http()
-//                        .make_span_with(
-//                            DefaultMakeSpan::new()
-//                                .include_headers(true)
-//                                .level(Level::INFO),
-//                        )
-//                        .on_response(DefaultOnResponse::new().include_headers(true)),
-//                )
-//                .propagate_x_request_id(),
-//        )
-//    }
-//}
+impl<S, B> RouterExt for Router<S, B>
+where
+    B: HttpBody + Send + 'static,
+    S: Clone + Send + Sync + 'static,
+{
+    fn add_axum_tracing_layer(self) -> Self {
+        self.layer(
+            ServiceBuilder::new()
+                .set_x_request_id(MakeRequestUuid)
+                .layer(
+                    TraceLayer::new_for_http()
+                        .make_span_with(
+                            DefaultMakeSpan::new()
+                                .include_headers(true)
+                                .level(Level::INFO),
+                        )
+                        .on_response(DefaultOnResponse::new().include_headers(true)),
+                )
+                .propagate_x_request_id(),
+        )
+    }
+}
