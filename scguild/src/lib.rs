@@ -1,5 +1,6 @@
 use poise::Command;
 
+pub mod configuration;
 pub mod fleet;
 pub mod telemetry;
 
