@@ -12,7 +12,7 @@ use axum_macros::debug_handler;
 use chrono::Utc;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::Deserialize;
-use sqlx::{types::Uuid, PgPool, Postgres, Transaction};
+use sqlx::{types::Uuid, Executor, PgPool, Postgres, Transaction};
 
 use crate::{
     domain::NewSubscriber,
@@ -84,13 +84,12 @@ pub async fn store_token(
     subscriber_id: Uuid,
     subscription_token: &str,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"INSERT INTO subscription_tokens (subscription_token, subscriber_id) VALUES ($1, $2)"#,
         subscription_token,
         subscriber_id
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
     Ok(())
 }
 
@@ -138,7 +137,7 @@ async fn insert_subscriber(
     new_subscriber: &NewSubscriber,
 ) -> Result<Uuid, sqlx::Error> {
     let subscriber_id = Uuid::new_v4();
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"
     INSERT INTO subscriptions (id, email, name, subscribed_at, status)
     VALUES ($1, $2, $3, $4, 'pending_confirmation')
@@ -147,9 +146,8 @@ async fn insert_subscriber(
         new_subscriber.email.as_ref(),
         new_subscriber.name.as_ref(),
         Utc::now()
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
     Ok(subscriber_id)
 }
 

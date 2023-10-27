@@ -1,9 +1,6 @@
 use argon2::{password_hash::SaltString, Algorithm, Argon2, Params, PasswordHasher, Version};
 use once_cell::sync::Lazy;
 use reqwest::Response;
-use sqlx::{Connection, Executor, PgConnection, PgPool};
-use uuid::Uuid;
-use wiremock::MockServer;
 use scguild::{
     configuration::{get_configuration, DatabaseSettings},
     email_client::EmailClient,
@@ -12,18 +9,17 @@ use scguild::{
     startup::{get_db_pool, Application},
     telemetry::{get_subscriber, init_subscriber},
 };
+use sqlx::{Connection, Executor, PgConnection, PgPool};
+use uuid::Uuid;
+use wiremock::MockServer;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
     if std::env::var("TEST_LOG").is_ok() {
-        let subscriber = get_subscriber(
-            "test".into(),
-            "scguild=debug,info".into(),
-            std::io::stdout,
-        );
+        let subscriber =
+            get_subscriber("test".into(), "scguild=debug,info".into(), std::io::stdout);
         init_subscriber(subscriber);
     } else {
-        let subscriber =
-            get_subscriber("test".into(), "scguild=debug,info".into(), std::io::sink);
+        let subscriber = get_subscriber("test".into(), "scguild=debug,info".into(), std::io::sink);
         init_subscriber(subscriber);
     }
 });

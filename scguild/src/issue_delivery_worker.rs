@@ -4,7 +4,7 @@ use crate::{
     configuration::Settings, domain::SubscriberEmail, email_client::EmailClient,
     startup::get_db_pool,
 };
-use sqlx::{PgPool, Postgres, Transaction};
+use sqlx::{Executor, PgPool, Postgres, Transaction};
 use tracing::{field::display, Span};
 use uuid::Uuid;
 
@@ -101,7 +101,7 @@ pub async fn try_execute_task(
 async fn dequeue_task(pool: &PgPool) -> Result<Option<EmailTask>, anyhow::Error> {
     let mut transaction = pool.begin().await?;
 
-    let r = sqlx::query!(
+    let query = sqlx::query!(
         r#"
         SELECT newsletter_issue_id, subscriber_email, retries
         FROM issue_delivery_queue
@@ -111,9 +111,9 @@ async fn dequeue_task(pool: &PgPool) -> Result<Option<EmailTask>, anyhow::Error>
         SKIP LOCKED
         LIMIT 1
         "#
-    )
-    .fetch_optional(&mut transaction)
-    .await?;
+    );
+
+    let r = transaction.fetch_optional(query).await?;
 
     if let Some(r) = r {
         Ok(Some(EmailTask {
@@ -146,7 +146,7 @@ async fn get_issue(pool: &PgPool, issue_id: Uuid) -> Result<NewsletterIssue, any
 
 #[tracing::instrument(skip_all)]
 async fn delete_task(mut task: EmailTask) -> Result<(), anyhow::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"
         DELETE FROM issue_delivery_queue
         WHERE
@@ -155,16 +155,15 @@ async fn delete_task(mut task: EmailTask) -> Result<(), anyhow::Error> {
         "#,
         task.issue_id,
         task.email,
-    )
-    .execute(&mut task.transaction)
-    .await?;
+    );
+    task.transaction.execute(query).await?;
     task.transaction.commit().await?;
     Ok(())
 }
 
 #[tracing::instrument(skip_all)]
 async fn queue_retry_task(mut task: EmailTask) -> Result<ExecutionOutcome, anyhow::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"
         UPDATE issue_delivery_queue
         SET
@@ -176,9 +175,8 @@ async fn queue_retry_task(mut task: EmailTask) -> Result<ExecutionOutcome, anyho
         "#,
         task.issue_id,
         task.email,
-    )
-    .execute(&mut task.transaction)
-    .await?;
+    );
+    task.transaction.execute(query).await?;
     task.transaction.commit().await?;
     Ok(ExecutionOutcome::TaskQueuedForRetry)
 }

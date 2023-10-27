@@ -1,10 +1,10 @@
 use std::fmt::{Debug, Display};
 
-use tokio::task::JoinError;
 use scguild::{
     configuration::get_configuration, idempotency_remover_worker, issue_delivery_worker,
     startup::Application, telemetry,
 };
+use tokio::task::JoinError;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

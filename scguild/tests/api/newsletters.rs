@@ -1,10 +1,10 @@
 use std::time::Duration;
 
+use scguild::routes::newsletters::PUBLISH_SUCCESS_INFO_MESSAGE;
 use wiremock::{
     matchers::{any, method, path},
     Mock, ResponseTemplate,
 };
-use scguild::routes::newsletters::PUBLISH_SUCCESS_INFO_MESSAGE;
 
 use crate::{helpers::spawn_app, login::assert_is_redirect_to};
 

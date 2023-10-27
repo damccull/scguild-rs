@@ -9,6 +9,7 @@ use axum::{
 use axum_flash::Key;
 use axum_session::{SessionConfig, SessionLayer, SessionRedisPool, SessionStore};
 use hyper::server::conn::AddrIncoming;
+use redis_pool::RedisPool;
 use secrecy::{ExposeSecret, Secret};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
@@ -41,10 +42,14 @@ impl Application {
 
         // Build a redis connection
         let redis = redis::Client::open(configuration.redis.uri.expose_secret().as_str())?;
+        let redis_pool = RedisPool::from(redis);
+
         // Create a session store
         let session_config = SessionConfig::new();
         let session_store =
-            SessionStore::<SessionRedisPool>::new(Some(redis.into()), session_config);
+            SessionStore::<SessionRedisPool>::new(Some(redis_pool.clone().into()), session_config)
+                .await
+                .expect("Could not create the session store");
 
         // Build an email client
         let email_client = configuration.email_client.client();
