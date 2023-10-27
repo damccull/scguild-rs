@@ -172,7 +172,7 @@ pub fn setup_redis() -> Result<(), anyhow::Error> {
             "-d",
             "--name",
             format!("scguild_redis_{}", chrono::Local::now().format("%s")).as_str(),
-            "redis:7",
+            "redis:latest",
         ])
         .status()?;
     println!("Redis done");
