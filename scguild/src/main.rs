@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::fmt::Display;
 
 use poise::serenity_prelude as serenity;
+use scguild::application::Application;
 use scguild::configuration::get_configuration;
 use tokio::task::JoinError;
 use tracing::instrument;
