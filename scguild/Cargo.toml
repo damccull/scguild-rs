@@ -35,3 +35,4 @@ hyper = "0.14.27"
 tower = "0.4.13"
 tower-http = { version = "0.4.4", features = ["trace", "request-id", "util"] }
 http = "0.2.9"
+redis_pool = "0.2.1"
