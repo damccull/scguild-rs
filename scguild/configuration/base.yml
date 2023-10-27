@@ -1,0 +1,18 @@
+application:
+  port: 8000
+  host: "127.0.0.1"
+  base_url: "set this via environment variable or production.yml"
+  hmac_secret: "set-this-in-the-environment-variables-or-secrets-on-your-host-before-launch-and-never-in-a-file"
+database:
+  host: "127.0.0.1"
+  port: 5432
+  username: "postgres"
+  password: "password"
+  database_name: "zero2prod"
+email_client:
+  base_url: "localhost"
+  sender_email: "test@gmail.com"
+  authorization_token: "set this in an environment variable"
+  timeout_milliseconds: 10000
+redis:
+  uri: "redis://127.0.0.1:6379"
