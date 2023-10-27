@@ -7,6 +7,7 @@ pub mod authentication;
 pub mod configuration;
 pub mod error;
 pub mod fleet;
+pub mod routes;
 pub mod session_state;
 pub mod telemetry;
 

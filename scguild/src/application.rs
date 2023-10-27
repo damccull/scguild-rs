@@ -13,6 +13,7 @@ use sqlx::{postgres::PgPoolOptions, PgPool};
 
 use crate::{
     configuration::{DatabaseSettings, Settings},
+    routes::{health_check, home},
     telemetry::RouterExt,
 };
 
