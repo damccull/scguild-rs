@@ -77,9 +77,7 @@ impl DatabaseSettings {
         let mut options = self.without_db().database(&self.database_name);
 
         // Set sqlx log level to TRACE to prevent log spam
-        options.log_statements(tracing::log::LevelFilter::Trace);
-
-        options
+        options.log_statements(tracing::log::LevelFilter::Trace)
     }
 
     /// Get a [`PgConnectOptions`] without the database specified.
