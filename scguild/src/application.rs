@@ -2,7 +2,6 @@ use std::net::TcpListener;
 
 use axum::{
     extract::FromRef,
-    middleware,
     routing::{get, IntoMakeService},
     Router, Server,
 };
@@ -13,7 +12,6 @@ use secrecy::{ExposeSecret, Secret};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
 use crate::{
-    authentication::reject_anonymous_user,
     configuration::{DatabaseSettings, Settings},
     telemetry::RouterExt,
 };
@@ -93,14 +91,14 @@ pub fn run(
     let router_no_session = Router::new().route("/health_check", get(health_check));
 
     // Admin section routes
-    let router_admin = Router::new()
-        .route("/admin/dashboard", get(admin_dashboard))
-        .layer(middleware::from_fn(reject_anonymous_user));
+    // let router_admin = Router::new()
+    //     .route("/admin/dashboard", get(admin_dashboard))
+    //     .layer(middleware::from_fn(reject_anonymous_user));
 
     // All routes that care about a session
     let router_with_session = Router::new()
         .route("/", get(home))
-        .merge(router_admin)
+        // .merge(router_admin)
         .layer(SessionLayer::new(session_store));
 
     // Create a top-level router that matches all routes
