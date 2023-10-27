@@ -1,0 +1,4 @@
+[workspace]
+default-members = ["scguild"]
+members = ["scguild", "xtask"]
+resolver = "2"
