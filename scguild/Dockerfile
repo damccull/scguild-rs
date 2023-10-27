@@ -25,7 +25,7 @@ COPY . .
 # Set sqlx to offline mode
 ENV SQLX_OFFLINE true
 # Build the binary using `release` profile for a nice, quick, optimized binary
-RUN cargo build --release --bin zero2prod
+RUN cargo build --release --bin scguild
 
 # RUNTIME STAGE
 FROM debian:bullseye-slim AS runtime
@@ -40,10 +40,10 @@ RUN apt-get update -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 # Copy relevant files from the builder stage to this stage
-COPY --from=builder /app/target/release/zero2prod zero2prod
+COPY --from=builder /app/target/release/scguild scguild
 # Get the configuration files for the runtime
 COPY configuration configuration
 # Set production mode
 ENV APP_ENVIRONMENT production
 # When the container is run, launch our binary
-ENTRYPOINT [ "./zero2prod" ]
+ENTRYPOINT [ "./scguild" ]

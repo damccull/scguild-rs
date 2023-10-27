@@ -4,7 +4,7 @@ use reqwest::Response;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use wiremock::MockServer;
-use zero2prod::{
+use scguild::{
     configuration::{get_configuration, DatabaseSettings},
     email_client::EmailClient,
     idempotency_remover_worker::remove_old_idempotency_entries,
@@ -17,13 +17,13 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     if std::env::var("TEST_LOG").is_ok() {
         let subscriber = get_subscriber(
             "test".into(),
-            "zero2prod=debug,info".into(),
+            "scguild=debug,info".into(),
             std::io::stdout,
         );
         init_subscriber(subscriber);
     } else {
         let subscriber =
-            get_subscriber("test".into(), "zero2prod=debug,info".into(), std::io::sink);
+            get_subscriber("test".into(), "scguild=debug,info".into(), std::io::sink);
         init_subscriber(subscriber);
     }
 });

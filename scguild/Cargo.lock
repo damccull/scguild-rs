@@ -3056,7 +3056,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "zero2prod"
+name = "scguild"
 version = "0.1.0"
 dependencies = [
  "anyhow",

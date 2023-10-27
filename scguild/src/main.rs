@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 use tokio::task::JoinError;
-use zero2prod::{
+use scguild::{
     configuration::get_configuration, idempotency_remover_worker, issue_delivery_worker,
     startup::Application, telemetry,
 };
@@ -9,7 +9,7 @@ use zero2prod::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Set up tracing
-    let subscriber = telemetry::get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
+    let subscriber = telemetry::get_subscriber("scguild".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
 
     // Set up configuration

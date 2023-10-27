@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for dzero2prod on 2023-04-26T22:58:30-04:00
+# fly.toml app configuration file generated for dscguild on 2023-04-26T22:58:30-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "dzero2prod"
+app = "dscguild"
 primary_region = "lax"
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -12,14 +12,14 @@ kill_timeout = 5
   auto_rollback = true
 
 [env]
-  APP_APPLICATION__BASE_URL = "https://dzero2prod.fly.dev"
+  APP_APPLICATION__BASE_URL = "https://dscguild.fly.dev"
   APP_DATABASE__DATABASE_NAME = "newsletter"
   APP_DATABASE__HOST = "damccull-postgres.flycast"
   APP_DATABASE__PASSWORD = "Do not put password here. Put it in a 'fly secret'."
   APP_DATABASE__PORT = "5432"
   APP_DATABASE__REQUIRE_SSL = "false"
   APP_DATABASE__USERNAME = "newsletter"
-  APP_EMAIL_CLIENT__SENDER_EMAIL = "zero2prod@digitalmccullough.com"
+  APP_EMAIL_CLIENT__SENDER_EMAIL = "scguild@digitalmccullough.com"
   PRIMARY_REGION = "lax"
 
 [[services]]

@@ -1,5 +1,5 @@
 [package]
-name = "zero2prod"
+name = "scguild"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
@@ -9,7 +9,7 @@ path = "src/lib.rs"
 
 [[bin]]
 path = "src/main.rs"
-name = "zero2prod"
+name = "scguild"
 
 [dependencies]
 anyhow = "1.0.75"
