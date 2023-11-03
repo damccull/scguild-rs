@@ -49,3 +49,4 @@
 * Bot will need either gateway or webhooks, need to decide which is better
 * Is any message passing necessary? Not yet, at least.
 * How to handle situations where the endpoints need to display user profile info? Separate query to user service or do I keep profile info inside the API? Could do game-specific profile separately.
+* Bot needs to be able to link a discord guild with a scguilds guild, and scguilds needs to link to a Star Citizen guild ID somehow.
