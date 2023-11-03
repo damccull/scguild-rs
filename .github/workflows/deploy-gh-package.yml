@@ -35,7 +35,7 @@ jobs:
         with:
           context: .
           tags: |
-            ghcr.io/damccull/norseline-rs/norseline-rs:latest
+            ghcr.io/damccull/scguild-rs/scguild-rs:latest
           push: ${{ github.ref == 'refs/heads/main' }}
         
       - name: Image digest
@@ -51,10 +51,10 @@ jobs:
 #         id: vars
 #         run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
 #       - name: Build the tagged Docker image
-#         run: docker build . --file Dockerfile --tag damccull/norseline:${{steps.vars.outputs.tag}}
+#         run: docker build . --file Dockerfile --tag damccull/scguild:${{steps.vars.outputs.tag}}
 #       - name: Push the tagged Docker image
-#         run: docker push damccull/norseline:${{steps.vars.outputs.tag}}
+#         run: docker push damccull/scguild:${{steps.vars.outputs.tag}}
 #       - name: Set the 'latest' Docker image
-#         run: docker tag damccull/norseline:${{steps.vars.outputs.tag}} damccull/norseline:latest
+#         run: docker tag damccull/scguild:${{steps.vars.outputs.tag}} damccull/scguild:latest
 #       - name: Push the 'latest' tag
-#         run: docker push damccull/norseline:latest
+#         run: docker push damccull/scguild:latest
