@@ -10,6 +10,7 @@ pub mod idempotency;
 pub mod idempotency_remover_worker;
 pub mod issue_delivery_worker;
 pub mod routes;
+pub mod services;
 pub mod session_state;
 pub mod startup;
 pub mod telemetry;
