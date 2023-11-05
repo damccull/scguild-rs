@@ -12,14 +12,27 @@ kill_timeout = 5
   auto_rollback = true
 
 [env]
+  # Application specific variables
   APP_APPLICATION__BASE_URL = "https://dscguild.fly.dev"
-  APP_DATABASE__DATABASE_NAME = "newsletter"
-  APP_DATABASE__HOST = "damccull-postgres.flycast"
-  APP_DATABASE__PASSWORD = "Do not put password here. Put it in a 'fly secret'."
-  APP_DATABASE__PORT = "5432"
-  APP_DATABASE__REQUIRE_SSL = "false"
-  APP_DATABASE__USERNAME = "newsletter"
+
+  ## Newsletter module variables
+  APP_NEWSLETTER_DATABASE__DATABASE_NAME = "newsletter"
+  APP_NEWSLETTER_DATABASE__HOST = "damccull-postgres.flycast"
+  APP_NEWSLETTER_DATABASE__PASSWORD = "Do not put password here. Put it in a 'fly secret'."
+  APP_NEWSLETTER_DATABASE__PORT = "5432"
+  APP_NEWSLETTER_DATABASE__REQUIRE_SSL = "false"
+  APP_NEWSLETTER_DATABASE__USERNAME = "newsletter"
+
+  ## Star Citizen API module variables
+  APP_SCAPI_DATABASE__DATABASE_NAME = "scapi"
+  APP_SCAPI_DATABASE__HOST = "damccull-postgres.flycast"
+  APP_SCAPI_DATABASE__PASSWORD = "Do not put password here. Put it in a 'fly secret'."
+  APP_SCAPI_DATABASE__PORT = "5432"
+  APP_SCAPI_DATABASE__REQUIRE_SSL = "false"
+  APP_SCAPI_DATABASE__USERNAME = "scapi"
   APP_EMAIL_CLIENT__SENDER_EMAIL = "scguild@digitalmccullough.com"
+
+  # Fly.io variables
   PRIMARY_REGION = "lax"
 
 [[services]]
