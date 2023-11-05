@@ -113,7 +113,7 @@ async fn dequeue_task(pool: &PgPool) -> Result<Option<EmailTask>, anyhow::Error>
         "#
     );
 
-    let r = transaction.fetch_optional(query).await?;
+    let r = query.fetch_optional(&mut *transaction).await?;
 
     if let Some(r) = r {
         Ok(Some(EmailTask {
