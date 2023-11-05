@@ -20,13 +20,11 @@ use crate::{
         admin_dashboard, change_password, change_password_form, confirm, home, log_out, login,
         login_form,
         newsletters::{newsletters_publish_form, publish_newsletter},
+        subscribe,
     },
     telemetry::RouterExt,
 };
-use crate::{
-    email_client::EmailClient,
-    routes::{health_check, subscribe},
-};
+use crate::{email_client::EmailClient, routes::health_check};
 
 pub type AppServer = Server<AddrIncoming, IntoMakeService<Router>>;
 
