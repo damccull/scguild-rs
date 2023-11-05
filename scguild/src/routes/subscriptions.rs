@@ -15,8 +15,8 @@ use serde::Deserialize;
 use sqlx::{types::Uuid, Executor, PgPool, Postgres, Transaction};
 
 use crate::{
-    domain::NewSubscriber,
     email_client::EmailClient,
+    services::newsletter::domain::NewSubscriber,
     startup::{AppState, ApplicationBaseUrl},
 };
 

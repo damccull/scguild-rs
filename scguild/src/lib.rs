@@ -3,12 +3,8 @@ use http::StatusCode;
 
 pub mod authentication;
 pub mod configuration;
-pub mod domain;
 pub mod email_client;
 pub mod error;
-pub mod idempotency;
-pub mod idempotency_remover_worker;
-pub mod issue_delivery_worker;
 pub mod routes;
 pub mod services;
 pub mod session_state;

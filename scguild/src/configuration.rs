@@ -6,7 +6,7 @@ use sqlx::{
     ConnectOptions,
 };
 
-use crate::{domain::SubscriberEmail, email_client::EmailClient};
+use crate::{email_client::EmailClient, services::newsletter::domain::SubscriberEmail};
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Grab the execution directory

@@ -1,8 +1,10 @@
 use std::fmt::{Debug, Display};
 
 use scguild::{
-    configuration::get_configuration, idempotency_remover_worker, issue_delivery_worker,
-    startup::Application, telemetry,
+    configuration::get_configuration,
+    services::newsletter::{idempotency_remover_worker, issue_delivery_worker},
+    startup::Application,
+    telemetry,
 };
 use tokio::task::JoinError;
 

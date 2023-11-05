@@ -2,7 +2,7 @@ use reqwest::Client;
 use secrecy::{ExposeSecret, Secret};
 use serde::Serialize;
 
-use crate::domain::SubscriberEmail;
+use crate::services::newsletter::domain::SubscriberEmail;
 
 #[derive(Debug)]
 pub struct EmailClient {
@@ -88,7 +88,7 @@ mod tests {
         Mock, MockServer, Request, ResponseTemplate,
     };
 
-    use crate::{domain::SubscriberEmail, email_client::EmailClient};
+    use crate::{email_client::EmailClient, services::newsletter::domain::SubscriberEmail};
 
     struct SendEmailBodyMatcher;
     impl wiremock::Match for SendEmailBodyMatcher {

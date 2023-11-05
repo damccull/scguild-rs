@@ -1,12 +1,11 @@
 use std::time::Duration;
 
-use crate::{
-    configuration::Settings, domain::SubscriberEmail, email_client::EmailClient,
-    startup::get_db_pool,
-};
+use crate::{configuration::Settings, email_client::EmailClient, startup::get_db_pool};
 use sqlx::{Executor, PgPool, Postgres, Transaction};
 use tracing::{field::display, Span};
 use uuid::Uuid;
+
+use super::domain::SubscriberEmail;
 
 pub async fn run_worker_until_stopped(configuration: Settings) -> Result<(), anyhow::Error> {
     // Set up the worker
