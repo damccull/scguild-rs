@@ -1,8 +1,9 @@
 # Design - SCGuild
 
 ## 4 Services
+
 * API - Stores all ship, trade, etc data about SC
-    * Consider game-specific profile info for SC like user name
+  * Consider game-specific profile info for SC like user name
 * Discord Bot - Stores discord unique ID and API oauth2 token
 * Web app - Stores API oauth2 token
 * User service - Stores all user profile data, oauth2 token revocation info, federated login tokens, etc
@@ -34,7 +35,7 @@
     * FIDO2
     * 2FA
     * User profile
-2. API
+2. SCAPI
     * Start with ship/fleet database
     * Trade tracker
     * Consider game-specific username/profile info
@@ -42,6 +43,43 @@
     * Front end for API
 4. Discord Bot
     * Bot end for API
+
+## User Service Route Definition
+
+* `/user`
+  * `/login` Allows the user to login via OAuth2.0 or FIDO2 (temporarily user/password while developing)
+  * `/logout` Allows the user to logout by using the revocation endpoint of OAuth2.0 or a FIDO2 logout
+  * `/profile` Allows trusted services to pull profile information and the user to modify their profile
+  * `/admin` Allows admin users to modify users
+    * `/dashboard` Shows the user service dashboard to administrators
+  * `/password` Allows a user to change their password. Likely goes away after OAuth2.0 and FIDO2 are implemented
+
+## Newsletter Service Route Definition
+
+* `/newsletter`
+  * `/preferences` Allows a user to checkmark newsletters they want to receive
+  * `/admin` Allows admins to send and manage newsletters
+
+## SCAPI Route Definition
+
+* `/scapi`
+  * `/ship/{shipId}` List a specific ship model
+  * `/ships` List all available ship models
+  * `/fleet`
+    * `GET` Display the fleet for the logged in user
+      * Responses:
+        * `200` Ok
+        * `404` No fleet found for user
+        * `500` Unexpected error
+    * `POST` Add a new ship to the fleet
+      * Responses:
+        * `200` Ok
+        * `404` No fleet found for user
+        * `422` Unprocessable content - user supplied a bad input
+        * `500` Unexpected error
+  * `/fleet/{userId}` List all ships belonging to the specified player
+  * `/fleet/{userId}/{shipId}` Get a specific player-owned ship from a fleet
+  * `/fleets` List all player fleets
 
 ## Further Thoughts and Questions
 
