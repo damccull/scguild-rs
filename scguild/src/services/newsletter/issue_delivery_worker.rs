@@ -65,7 +65,7 @@ pub async fn try_execute_task(
                         &issue.title,
                         &issue.html_content,
                         &issue.text_content,
-                        Some("newsletter-broadcast-stream")
+                        Some("newsletter-broadcast-stream"),
                     )
                     .await
                 {
