@@ -7,6 +7,7 @@ use uuid::Uuid;
 
 use super::domain::SubscriberEmail;
 
+#[tracing::instrument(skip_all)]
 pub async fn run_worker_until_stopped(configuration: Settings) -> Result<(), anyhow::Error> {
     // Set up the worker
     let connection_pool = get_db_pool(&configuration.database);
