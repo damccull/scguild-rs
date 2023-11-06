@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use super::IdempotencyKey;
 
-#[tracing::instrument(name = "Getting cached newsletter response", skip(pool))]
+#[tracing::instrument(name = "Getting cached response", skip(pool))]
 pub async fn get_saved_response(
     pool: &PgPool,
     idempotency_key: &IdempotencyKey,
@@ -49,7 +49,7 @@ pub async fn get_saved_response(
 }
 
 #[tracing::instrument(
-    name = "Saving cached newsletter response",
+    name = "Saving cached response",
     skip(transaction, http_response)
 )]
 pub async fn save_response(
@@ -95,7 +95,7 @@ pub async fn save_response(
     Ok(http_response)
 }
 
-#[tracing::instrument(name = "Attempt to process a newsletter send request")]
+#[tracing::instrument(name = "Attempt to process an idempotent request")]
 pub async fn try_processing(
     pool: &PgPool,
     idempotency_key: &IdempotencyKey,
