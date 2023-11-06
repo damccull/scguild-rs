@@ -4,10 +4,8 @@ use reqwest::Response;
 use scguild::{
     configuration::{get_configuration, DatabaseSettings},
     email_client::EmailClient,
-    services::newsletter::{
-        idempotency_remover_worker::remove_old_idempotency_entries,
-        issue_delivery_worker::{try_execute_task, ExecutionOutcome},
-    },
+    idempotency::idempotency_remover_worker::remove_old_idempotency_entries,
+    services::newsletter::issue_delivery_worker::{try_execute_task, ExecutionOutcome},
     startup::{get_db_pool, Application},
     telemetry::{get_subscriber, init_subscriber},
 };

@@ -1,3 +1,4 @@
+pub mod idempotency_remover_worker;
 mod key;
 mod persistence;
 

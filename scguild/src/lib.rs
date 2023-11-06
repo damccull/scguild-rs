@@ -5,6 +5,7 @@ pub mod authentication;
 pub mod configuration;
 pub mod email_client;
 pub mod error;
+pub mod idempotency;
 pub mod routes;
 pub mod services;
 pub mod session_state;

@@ -13,9 +13,7 @@ use crate::{
     authentication::{get_username, UserId},
     e400, e500,
     error::ResponseError,
-    services::newsletter::idempotency::{
-        save_response, try_processing, IdempotencyKey, NextAction,
-    },
+    idempotency::{save_response, try_processing, IdempotencyKey, NextAction},
 };
 
 use newsletter_types::*;
