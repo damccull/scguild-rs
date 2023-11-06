@@ -105,11 +105,22 @@ mod tests {
             let result: Result<serde_json::Value, _> = serde_json::from_slice(&request.body);
             if let Ok(body) = result {
                 // Ensure mandatory fields are populated
-                body.get("From").is_some()
+                let mandatory = body.get("From").is_some()
                     && body.get("To").is_some()
                     && body.get("Subject").is_some()
                     && body.get("HtmlBody").is_some()
-                    && body.get("TextBody").is_some()
+                    && body.get("TextBody").is_some();
+
+                let strm = body.get("MessageStream");
+                println!("The message stream is {:?}", &strm);
+                // Ensure the correct stream if a stream is specified
+                let correct_stream = match strm {
+                    Some(stream) if stream == "test-stream" => true,
+                    Some(serde_json::Value::Null) => true,
+                    Some(_) => false,
+                    None => true,
+                };
+                mandatory && correct_stream
             } else {
                 false
             }
@@ -172,7 +183,6 @@ mod tests {
         let email_client = email_client(mock_server.uri());
 
         Mock::given(header_exists("X-Postmark-Server-Token"))
-            .and(header("MessageStream", "test-stream"))
             .and(header("Content-Type", "application/json"))
             .and(path("/email"))
             .and(method("POST"))
@@ -183,6 +193,7 @@ mod tests {
             .await;
 
         // Act
+        // Test correct stream
         let _ = email_client
             .send_email(
                 &email(),
@@ -190,6 +201,17 @@ mod tests {
                 &content(),
                 &content(),
                 Some("test-stream"),
+            )
+            .await;
+
+        // Test incorrect stream
+        let _ = email_client
+            .send_email(
+                &email(),
+                &subject(),
+                &content(),
+                &content(),
+                Some("wrong-stream"),
             )
             .await;
 
