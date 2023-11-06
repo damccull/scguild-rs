@@ -124,6 +124,7 @@ async fn send_confirmation_email(
             "Welcome!",
             &html_body,
             &plain_body,
+            None
         )
         .await
 }

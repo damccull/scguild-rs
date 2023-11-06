@@ -29,23 +29,30 @@ impl EmailClient {
     }
 
     /// Send an email.
+    #[tracing::instrument(skip(self, html_content, text_content))]
     pub async fn send_email(
         &self,
         recipient: &SubscriberEmail,
         subject: &str,
         html_content: &str,
         text_content: &str,
+        message_stream: Option<&str>,
     ) -> Result<(), reqwest::Error> {
         //TODO: Replace this with Url::join() eventually
         let url = format!("{}/email", self.base_url);
 
-        let request_body = SendEmailRequest {
+        let mut request_body = SendEmailRequest {
             from: self.sender.as_ref(),
             to: recipient.as_ref(),
             subject,
             html_body: html_content,
             text_body: text_content,
+            message_stream: None,
         };
+
+        if let Some(stream) = message_stream {
+            request_body.message_stream = Some(stream);
+        }
 
         self.http_client
             .post(&url)
@@ -70,6 +77,7 @@ struct SendEmailRequest<'a> {
     subject: &'a str,
     html_body: &'a str,
     text_body: &'a str,
+    message_stream: Option<&'a str>,
 }
 
 #[cfg(test)]
@@ -151,7 +159,38 @@ mod tests {
 
         // Act
         let _ = email_client
-            .send_email(&email(), &subject(), &content(), &content())
+            .send_email(&email(), &subject(), &content(), &content(), None)
+            .await;
+
+        // Assertions will happen when the mock server goes out of scope
+    }
+
+    #[tokio::test]
+    async fn send_email_sends_the_expected_request_to_the_expected_stream() {
+        // Arrange
+        let mock_server = MockServer::start().await;
+        let email_client = email_client(mock_server.uri());
+
+        Mock::given(header_exists("X-Postmark-Server-Token"))
+            .and(header("MessageStream", "test-stream"))
+            .and(header("Content-Type", "application/json"))
+            .and(path("/email"))
+            .and(method("POST"))
+            .and(SendEmailBodyMatcher)
+            .respond_with(ResponseTemplate::new(200))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        // Act
+        let _ = email_client
+            .send_email(
+                &email(),
+                &subject(),
+                &content(),
+                &content(),
+                Some("test-stream"),
+            )
             .await;
 
         // Assertions will happen when the mock server goes out of scope
@@ -171,7 +210,7 @@ mod tests {
 
         // Act
         let outcome = email_client
-            .send_email(&email(), &subject(), &content(), &content())
+            .send_email(&email(), &subject(), &content(), &content(), None)
             .await;
 
         // Assert
@@ -192,7 +231,7 @@ mod tests {
 
         // Act
         let outcome = email_client
-            .send_email(&email(), &subject(), &content(), &content())
+            .send_email(&email(), &subject(), &content(), &content(), None)
             .await;
 
         // Assert
@@ -216,7 +255,7 @@ mod tests {
 
         // Act
         let outcome = email_client
-            .send_email(&email(), &subject(), &content(), &content())
+            .send_email(&email(), &subject(), &content(), &content(), None)
             .await;
 
         assert_err!(outcome);
