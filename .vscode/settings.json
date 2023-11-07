@@ -3,4 +3,15 @@
         //"core",
         "ed25519-dalek"
       ],
+      "sqltools.connections": [
+        {
+          "previewLimit": 50,
+          "server": "localhost",
+          "port": 5432,
+          "driver": "PostgreSQL",
+          "name": "scguild",
+          "database": "scguild",
+          "username": "postgres"
+        }
+      ],
 }
